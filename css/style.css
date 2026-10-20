@@ -1278,3 +1278,37 @@ html.notes-open .notes-tab { opacity: 0; pointer-events: none; }
 .sz-s { font-size: 13px; } .sz-m { font-size: 17px; } .sz-l { font-size: 22px; }
 .sz.on { color: #17110a; background: var(--accent); border-color: var(--accent); }
 @media (max-width: 600px) { .hf-toast { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); max-width: calc(100vw - 32px); } }
+
+/* ---------- Notizheft: Vollbild ---------- */
+html.heft-full, html.heft-full body { overflow: hidden; }
+.hf-stage.full { position: fixed; inset: 0; z-index: 150; margin: 0; min-height: 0; display: flex; flex-direction: column; justify-content: center;
+  padding-top: max(16px, env(safe-area-inset-top, 0px)); padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); animation: fullIn .4s var(--ease); }
+@keyframes fullIn { from { opacity: 0; transform: scale(.985); } }
+.hf-stage.full .hf-top { display: none; }
+.hf-stage.full .book { --bw: min(1700px, calc(100vw - 48px), calc((100vh - 110px) * 1.42)); }
+.hf-stage.full .book.single { --bw: min(calc(100vw - 20px), calc((100dvh - 170px) * .71)); }
+.hf-stage.full .hf-tools { position: relative; bottom: auto; margin-top: 16px; }
+.hf-exit { display: none; position: absolute; z-index: 5; top: max(12px, env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px));
+           align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line2); background: rgba(22,20,22,.8);
+           color: var(--muted); font: 600 10.5px var(--font-mono); letter-spacing: .1em; text-transform: uppercase; cursor: pointer; backdrop-filter: blur(10px); }
+.hf-exit svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.hf-exit:hover { color: var(--text); }
+.hf-stage.full .hf-exit { display: inline-flex; }
+@media (max-width: 600px) { .hf-exit span { display: none; } }
+
+/* ---------- Notizheft: Text markieren ---------- */
+.pg-content ::selection { background: rgba(43,58,143,.22); }
+mark.hl { color: inherit; padding: 0 .4cqw; margin: 0 -.2cqw; border-radius: .6cqw .2cqw; box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  background: linear-gradient(100deg, transparent .4%, color-mix(in srgb, var(--hl) 80%, transparent) 2%, color-mix(in srgb, var(--hl) 62%, transparent) 50%, color-mix(in srgb, var(--hl) 78%, transparent) 97%, transparent 99.6%) no-repeat 0 0 / 100% 100%; }
+mark.hl-u { background: none; padding: 0; margin: 0; text-decoration: underline; text-decoration-color: var(--hl); text-decoration-thickness: .5cqw; text-underline-offset: .9cqw; }
+mark.hl.fresh:not(.hl-u) { animation: hlSweep .6s var(--ease) both; }
+@keyframes hlSweep { from { background-size: 0% 100%; } }
+.hl-pop { position: fixed; z-index: 200; display: flex; align-items: center; gap: 6px; padding: 7px 8px; border-radius: 12px;
+          background: rgba(24,22,25,.96); border: 1px solid var(--line2); box-shadow: 0 14px 34px -10px rgba(0,0,0,.8); backdrop-filter: blur(10px); animation: rise .2s var(--ease) both; }
+.hl-sw { width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(255,255,255,.18); background: var(--sw); cursor: pointer; transition: transform .2s var(--ease); }
+.hl-sw:hover { transform: scale(1.15); }
+.hl-u-btn, .hl-x { height: 28px; min-width: 28px; display: grid; place-items: center; border-radius: 8px; border: 1px solid var(--line2); background: none; color: var(--text); cursor: pointer; }
+.hl-u-btn { font: 700 14px var(--font-body); text-decoration: underline; text-decoration-color: #ef6464; text-underline-offset: 3px; }
+.hl-x svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.hl-u-btn:hover, .hl-x:hover { background: rgba(255,255,255,.07); }

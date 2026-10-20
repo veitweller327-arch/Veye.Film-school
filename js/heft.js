@@ -117,6 +117,7 @@
             <li><b>Bild</b> – Fotos &amp; Skizzen einkleben</li>
             <li><b>Zettel</b> – Haftnotiz aufkleben</li>
             <li><b>Text</b> – Textfeld irgendwo auf die Seite setzen</li>
+            <li><b>Markieren</b> – Text auswählen, Farbe tippen</li>
             <li>Blättern: Pfeile, Wischen oder ← →</li>
           </ul>
           <div class="date-note">angefangen am ${esc(heft.started || today())}</div>
@@ -188,7 +189,55 @@
         <div class="pg-layer"><canvas class="pg-ink"></canvas></div>
       </div>
       ${num ? `<div class="pg-num">${num}</div>` : ""}`;
+    applyHighlights(el.querySelector(".pg-content"), pageData(p.id).hl || []);
     return el;
+  }
+
+  /* ---------------- Text markieren (Highlights) ---------------- */
+  const HL_COLORS = [["#ffe14d", "Gelb"], ["#ff8ec7", "Pink"], ["#7fe0ff", "Blau"], ["#a6f28a", "Grün"]];
+
+  // Textknoten eines Bereichs in Reihenfolge
+  function textNodes(root) {
+    const out = [], w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    while (w.nextNode()) out.push(w.currentNode);
+    return out;
+  }
+  function offsetOf(root, node, off) {
+    const r = document.createRange(); r.selectNodeContents(root); r.setEnd(node, off);
+    return r.toString().length;
+  }
+  function unwrapMarks(root) {
+    root.querySelectorAll("mark.hl").forEach(m => { const p = m.parentNode; while (m.firstChild) p.insertBefore(m.firstChild, m); p.removeChild(m); p.normalize(); });
+  }
+  // Markierungen anwenden; passt der gespeicherte Text nicht mehr zur Position, wird er im Text gesucht
+  function applyHighlights(root, list) {
+    if (!root || !list.length) return;
+    const full = root.textContent;
+    list.forEach(h => {
+      let s = h.s, e = h.e;
+      if (full.slice(s, e) !== h.t) { const i = full.indexOf(h.t); if (i < 0) return; s = i; e = i + h.t.length; }
+      let pos = 0;
+      for (const n of textNodes(root)) {
+        const len = n.nodeValue.length, a = Math.max(s, pos), b = Math.min(e, pos + len);
+        if (a < b) {
+          const r = document.createRange(); r.setStart(n, a - pos); r.setEnd(n, b - pos);
+          const m = document.createElement("mark");
+          m.className = "hl" + (h.u ? " hl-u" : "");
+          m.dataset.hl = h.id;
+          m.style.setProperty("--hl", h.c);
+          try { r.surroundContents(m); } catch { /* über Elementgrenzen – überspringen */ }
+          pos += len; // Knoten wurde geteilt; Restlänge bleibt gleich
+          continue;
+        }
+        pos += len;
+        if (pos >= e) break;
+      }
+    });
+  }
+  function refreshHighlights(pg) {
+    const c = pg && pg.querySelector(".pg-content"); if (!c) return;
+    unwrapMarks(c);
+    applyHighlights(c, pageData(pg.dataset.id).hl || []);
   }
 
   // nach dem Einhängen: Zeichenebene an Inhaltshöhe anpassen und Inhalte zeichnen
@@ -530,7 +579,8 @@
     note: '<path d="M5 4h14v11l-5 5H5z"/><path d="M14 20v-5h5"/>',
     undo: '<path d="M9 7L4 12l5 5"/><path d="M4 12h10a6 6 0 010 12" transform="translate(0 -6)"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
-    text: '<path d="M5 6V4h14v2"/><path d="M12 4v16"/><path d="M9 20h6"/>', close: '<path d="M6 6l12 12M18 6L6 18"/>'
+    text: '<path d="M5 6V4h14v2"/><path d="M12 4v16"/><path d="M9 20h6"/>',
+    full: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>', unfull: '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>', close: '<path d="M6 6l12 12M18 6L6 18"/>'
   };
   const icon = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${I[k]}</svg>`;
 
@@ -584,9 +634,16 @@
           <button type="button" class="tb" id="hfNote" aria-label="Haftnotiz">${icon("note")}<span>Zettel</span></button>
           <button type="button" class="tb" id="hfUndo" aria-label="Rückgängig">${icon("undo")}<span>Zurück</span></button>
           <button type="button" class="tb" id="hfAdd" aria-label="Neue Skizzenseite">${icon("plus")}<span>Seite</span></button>
+          <button type="button" class="tb" id="hfFull" aria-label="Vollbild">${icon("full")}<span>Vollbild</span></button>
           <div class="palette" id="hfPalette" hidden></div>
         </div>
         <div class="hf-toast" role="status" hidden></div>
+        <button type="button" class="hf-exit" id="hfExit" aria-label="Vollbild beenden">${icon("unfull")}<span>Vollbild beenden</span></button>
+        <div class="hl-pop" id="hlPop" role="toolbar" aria-label="Text markieren" hidden>
+          ${HL_COLORS.map(([c, n]) => `<button type="button" class="hl-sw" data-hl="${c}" style="--sw:${c}" aria-label="Markieren ${n}"></button>`).join("")}
+          <button type="button" class="hl-u-btn" data-hlu="1" aria-label="Unterstreichen">U</button>
+          <button type="button" class="hl-x" data-hlx="1" aria-label="Markierung entfernen">${icon("eraser")}</button>
+        </div>
       </section>`;
     book = el.querySelector(".book");
     renderView();
@@ -641,7 +698,7 @@
       const u = undoStack.pop();
       if (!u) { toast("Nichts zum Rückgängigmachen."); return; }
       u.undo();
-      book.querySelectorAll(".sheets .pg").forEach(layoutPage);
+      book.querySelectorAll(".sheets .pg").forEach(pg => { refreshHighlights(pg); layoutPage(pg); });
     };
     el.querySelector("#hfAdd").onclick = () => {
       openBook();
@@ -680,6 +737,7 @@
     // Wischen zum Blättern (Hand-Werkzeug)
     let swipe = null;
     function swipeStart(e) {
+      if (e.pointerType === "mouse") return; // mit der Maus wird markiert, nicht geblättert
       if (tool !== "hand" || e.target.closest(".it, [contenteditable], button, .hf-tools, details")) return;
       if (!e.target.closest(".book")) return;
       swipe = { x: e.clientX, y: e.clientY, t: Date.now() };
@@ -687,6 +745,8 @@
     function swipeEnd(e) {
       if (!swipe) return;
       const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed) { swipe = null; return; }
       if (Math.abs(dx) > 60 && Math.abs(dy) < 50 && Date.now() - swipe.t < 700) {
         if (book.classList.contains("closed")) openBook(); else go(dx < 0 ? 1 : -1);
       }
@@ -700,6 +760,96 @@
       if (e.key === "ArrowLeft") go(-1);
     };
     document.addEventListener("keydown", onKey);
+
+    /* Vollbild */
+    const stage = el.querySelector(".hf-stage");
+    const relayout = () => setTimeout(() => book.querySelectorAll(".sheets .pg").forEach(layoutPage), 60);
+    function setFull(on) {
+      stage.classList.toggle("full", on);
+      document.documentElement.classList.toggle("heft-full", on);
+      const btn = el.querySelector("#hfFull");
+      btn.innerHTML = `${icon(on ? "unfull" : "full")}<span>${on ? "Beenden" : "Vollbild"}</span>`;
+      btn.classList.toggle("on", on);
+      relayout();
+    }
+    el.querySelector("#hfFull").onclick = () => {
+      const on = !stage.classList.contains("full");
+      setFull(on);
+      try {
+        if (on && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+        if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      } catch { /* nicht erlaubt – Vollbild innerhalb der Seite reicht */ }
+    };
+    el.querySelector("#hfExit").onclick = () => el.querySelector("#hfFull").click();
+    const onFs = () => {
+      if (!document.body.contains(el)) { document.removeEventListener("fullscreenchange", onFs); return; }
+      if (!document.fullscreenElement && stage.classList.contains("full")) setFull(false); else relayout();
+    };
+    document.addEventListener("fullscreenchange", onFs);
+    const onEsc = e => {
+      if (!document.body.contains(el)) { document.removeEventListener("keydown", onEsc); return; }
+      if (e.key === "Escape" && stage.classList.contains("full") && el.querySelector("#hlPop").hidden) {
+        setFull(false);
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      }
+    };
+    document.addEventListener("keydown", onEsc);
+    window.addEventListener("hashchange", function off() { document.documentElement.classList.remove("heft-full"); if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); window.removeEventListener("hashchange", off); });
+
+    /* Text markieren */
+    const pop = el.querySelector("#hlPop");
+    let selInfo = null;
+    function readSelection() {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || !sel.rangeCount || tool !== "hand") return null;
+      const r = sel.getRangeAt(0);
+      const node = r.commonAncestorContainer.nodeType === 1 ? r.commonAncestorContainer : r.commonAncestorContainer.parentElement;
+      const content = node && node.closest(".sheets .pg-content");
+      if (!content || !content.contains(r.startContainer) || !content.contains(r.endContainer)) return null;
+      const t = r.toString();
+      if (!t.trim()) return null;
+      const s = offsetOf(content, r.startContainer, r.startOffset);
+      return { pg: content.closest(".pg"), content, s, e: s + t.length, t, rect: r.getBoundingClientRect() };
+    }
+    function placePop() {
+      selInfo = readSelection();
+      if (!selInfo) { pop.hidden = true; return; }
+      pop.hidden = false;
+      const w = pop.offsetWidth, h = pop.offsetHeight, vw = document.documentElement.clientWidth;
+      const touch = matchMedia("(hover: none)").matches;
+      let top = touch ? selInfo.rect.bottom + 14 : selInfo.rect.top - h - 10;
+      if (top < 8) top = selInfo.rect.bottom + 10;
+      top = Math.min(window.innerHeight - h - 8, top);
+      pop.style.left = Math.max(8, Math.min(vw - w - 8, selInfo.rect.left + selInfo.rect.width / 2 - w / 2)) + "px";
+      pop.style.top = top + "px";
+    }
+    let selT = null;
+    const onSel = () => {
+      if (!document.body.contains(el)) { document.removeEventListener("selectionchange", onSel); return; }
+      clearTimeout(selT); selT = setTimeout(placePop, 150);
+    };
+    document.addEventListener("selectionchange", onSel);
+    pop.addEventListener("mousedown", e => e.preventDefault()); // Auswahl behalten
+    pop.addEventListener("click", e => {
+      if (!selInfo) return;
+      const { pg, s, e: end, t } = selInfo, id = pg.dataset.id;
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.hlx) {
+        let removed = [];
+        setPageData(id, d => { const all = d.hl || []; removed = all.filter(h => h.s < end && h.e > s); d.hl = all.filter(h => !(h.s < end && h.e > s)); });
+        if (removed.length) undoStack.push({ id, undo: () => setPageData(id, d => { d.hl = [...(d.hl || []), ...removed]; }) });
+      } else {
+        const h = { id: uid(), s, e: end, t, c: b.dataset.hl || "#b3312c", u: !!b.dataset.hlu };
+        setPageData(id, d => { d.hl = (d.hl || []).filter(x => !(x.s < end && x.e > s)); d.hl.push(h); });
+        undoStack.push({ id, undo: () => setPageData(id, d => { d.hl = (d.hl || []).filter(x => x.id !== h.id); }) });
+      }
+      window.getSelection().removeAllRanges();
+      pop.hidden = true;
+      refreshHighlights(pg);
+      const m = pg.querySelectorAll("mark.hl"); m.forEach(x => x.classList.add("fresh"));
+      setTimeout(() => m.forEach(x => x.classList.remove("fresh")), 900);
+    });
+    stage.addEventListener("scroll", () => { pop.hidden = true; }, true);
 
     const onResize = () => {
       if (!document.body.contains(el)) { window.removeEventListener("resize", onResize); return; }
