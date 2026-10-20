@@ -55,3 +55,7 @@ Alle Lektionen stehen in `data/kurse.js` – neue Lektion = neues Objekt im `lek
 ### Lernzettel
 
 Beim Abschließen einer Lektion legt der KI-Assistent einen Lernzettel ins Notizheft (Kernaussagen, wichtige Werte, Begriffe, Merksatz, Selbsttest-Fragen) und bezieht die eigenen Markierungen ein. Ohne KI wird der Lernzettel aus den Lektionsdaten erzeugt.
+
+## Digitales Notizheft (#/notizheft)
+
+`js/heft.js`: realistisches Notizbuch mit Ledereinband, Doppelseiten (Handy: Einzelseite) und Umblätter-Animation. Pro Lektion links der Lernzettel, rechts Zitate, eigene Notizen und Platz für Skizzen; dazu Innenseite, Inhaltsverzeichnis und freie Skizzenseiten. Werkzeuge: Stift, Textmarker, Radierer, Rückgängig, Bilder einkleben (Polaroid, verschieb- und skalierbar), Haftnotizen. Zeichnungen und Positionen liegen in `localStorage` („veye:heft“), Bilder in IndexedDB.

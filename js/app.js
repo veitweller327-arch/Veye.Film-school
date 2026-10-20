@@ -521,6 +521,7 @@
     }
     else if (parts[0] === "videos") { html = videosPage(query); after = bindVideos; }
     else if (parts[0] === "labor") { html = laborPage(); after = () => window.Labor.mount(document.getElementById("laborRoot")); }
+    else if (parts[0] === "notizheft") { html = `<div id="heftRoot"></div>`; after = () => window.Heft.mount(document.getElementById("heftRoot")); }
     else if (parts[0] === "feed") { html = feedPage(); after = bindFeed; }
     else if (parts[0] === "training") { html = trainingPage(); after = () => window.Tutor.training(document.getElementById("trainRoot"), KURSE, isDone); }
     else if (parts[0] === "glossar") {

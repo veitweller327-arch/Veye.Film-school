@@ -8,7 +8,10 @@
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const KEY = "veye:notes";
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } };
-  const save = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch { /* privat-Modus */ } };
+  const save = d => {
+    try { localStorage.setItem(KEY, JSON.stringify(d)); } catch { /* privat-Modus */ }
+    window.dispatchEvent(new CustomEvent("veye:notes"));
+  };
   const pad2 = n => String(n).padStart(2, "0");
 
   // Lehrplan-Reihenfolge und Titel
@@ -63,7 +66,8 @@
     <div class="np-head">
       <div><span class="label acc">Notizheft</span><div class="np-meta" id="npMeta"></div></div>
       <div class="np-actions">
-        <button class="btn small" type="button" id="npCopy">Alles kopieren</button>
+        <a class="btn small" href="#/notizheft" id="npBook">Als Heft</a>
+        <button class="btn small" type="button" id="npCopy">Kopieren</button>
         <button class="np-close" type="button" aria-label="Notizheft schließen">✕</button>
       </div>
     </div>
@@ -386,6 +390,7 @@ ${eigene || "keine"}`;
       return;
     }
     if (e.target.closest(".np-close")) close();
+    if (e.target.closest("#npBook")) close();
     if (e.target.closest(".np-link")) { if (matchMedia("(max-width: 1199px)").matches) close(); }
   });
 
