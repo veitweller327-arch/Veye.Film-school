@@ -116,6 +116,7 @@
             <li><b>Stift</b> – Skizzen, Pfeile, Lichtpläne</li>
             <li><b>Bild</b> – Fotos &amp; Skizzen einkleben</li>
             <li><b>Zettel</b> – Haftnotiz aufkleben</li>
+            <li><b>Text</b> – Textfeld irgendwo auf die Seite setzen</li>
             <li>Blättern: Pfeile, Wischen oder ← →</li>
           </ul>
           <div class="date-note">angefangen am ${esc(heft.started || today())}</div>
@@ -163,6 +164,8 @@
   const COLORS = [["#2b2a33", "Graphit"], ["#2b3a8f", "Tinte"], ["#b3312c", "Rot"], ["#2f7d4e", "Grün"]];
   const MARKERS = [["#ffe14d", "Gelb"], ["#ff8ec7", "Pink"], ["#7fe0ff", "Blau"], ["#a6f28a", "Grün"]];
   let markerColor = "#ffe14d";
+  let textColor = "#2b3a8f", textSize = "m";
+  const SIZES = [["s", "Klein"], ["m", "Mittel"], ["l", "Groß"]];
   const undoStack = [];
 
   const pageData = id => { const h = loadHeft(); return (h.pages && h.pages[id]) || { strokes: [], items: [] }; };
@@ -253,6 +256,10 @@
       n.innerHTML = `<div class="tape"></div><div class="polaroid"><img alt="Skizze" draggable="false"><div class="pol-cap" contenteditable="true" spellcheck="false" data-cap="${it.id}" data-placeholder="Beschriftung">${esc(it.cap || "")}</div></div>
         <button type="button" class="it-del" aria-label="Entfernen">✕</button><span class="it-size" aria-hidden="true"></span>`;
       imageUrl(it).then(u => { const img = n.querySelector("img"); if (img && u) img.src = u; });
+    } else if (it.type === "text") {
+      n.style.setProperty("--ink", it.color || "#2b3a8f");
+      n.innerHTML = `<div class="tbox tbox-${it.size || "m"}"><div class="tbox-grip" title="Verschieben" aria-hidden="true"></div><div class="tbox-text" contenteditable="true" spellcheck="false" data-tbox="${it.id}" data-placeholder="Text …">${esc(it.text || "")}</div></div>
+        <button type="button" class="it-del" aria-label="Textfeld entfernen">✕</button><span class="it-size" aria-hidden="true"></span>`;
     } else {
       n.style.setProperty("--note", it.color || "#ffe680");
       n.innerHTML = `<div class="sticky"><div class="sticky-grip"></div><div class="sticky-text" contenteditable="true" spellcheck="false" data-sticky="${it.id}" data-placeholder="Notiz …">${esc(it.text || "")}</div></div>
@@ -348,10 +355,12 @@
     root.dataset.tool = t;
     root.querySelectorAll("[data-tool]").forEach(b => b.classList.toggle("on", b.dataset.tool === t));
     const pal = root.querySelector("#hfPalette");
-    const show = t === "pen" || t === "marker";
+    const show = t === "pen" || t === "marker" || t === "text";
     pal.hidden = !show;
-    if (show) pal.innerHTML = (t === "pen" ? COLORS : MARKERS).map(([c, n]) =>
-      `<button type="button" class="sw ${c === (t === "pen" ? color : markerColor) ? "on" : ""}" data-color="${c}" style="--sw:${c}" aria-label="${n}"></button>`).join("");
+    const cur = t === "pen" ? color : t === "marker" ? markerColor : textColor;
+    if (show) pal.innerHTML = (t === "marker" ? MARKERS : COLORS).map(([c, n]) =>
+      `<button type="button" class="sw ${c === cur ? "on" : ""}" data-color="${c}" style="--sw:${c}" aria-label="${n}"></button>`).join("")
+      + (t === "text" ? `<span class="pal-sep"></span>` + SIZES.map(([z, n]) => `<button type="button" class="sz sz-${z} ${z === textSize ? "on" : ""}" data-size="${z}" aria-label="${n}">A</button>`).join("") : "");
   }
 
   // Zeichnen
@@ -416,7 +425,7 @@
     const it = e.target.closest(".it");
     if (!it || tool !== "hand") return;
     if (e.target.closest(".it-del")) return;
-    if (e.target.closest("[contenteditable]") && !e.target.closest(".sticky-grip")) return;
+    if (e.target.closest("[contenteditable]") && !e.target.closest(".sticky-grip, .tbox-grip")) return;
     const pg = it.closest(".pg"); if (!pg || !pg.dataset.id) return;
     e.preventDefault();
     const W = pg.querySelector(".pg-scroll").clientWidth;
@@ -453,9 +462,9 @@
     const pgs = [...book.querySelectorAll(".sheets .pg[data-id]")];
     return pgs.find(p => p.classList.contains("right")) || pgs[pgs.length - 1] || null;
   }
-  function addItem(pg, item) {
+  function addItem(pg, item, keepPos) {
     const sc = pg.querySelector(".pg-scroll"), W = sc.clientWidth;
-    item.y = (sc.scrollTop + sc.clientHeight * 0.18) / W;
+    if (!keepPos) item.y = (sc.scrollTop + sc.clientHeight * 0.18) / W;
     setPageData(pg.dataset.id, d => d.items.push(item));
     undoStack.push({ id: pg.dataset.id, undo: () => { setPageData(pg.dataset.id, d => { d.items = d.items.filter(x => x.id !== item.id); }); if (item.type === "img") delImage(item.id); } });
     layoutPage(pg);
@@ -493,9 +502,9 @@
         try { localStorage.setItem("veye:notes", JSON.stringify(d)); } catch { /* voll */ }
         if (window.Notes) window.Notes.updateBadge();
       });
-    } else if (t.dataset.sticky || t.dataset.cap) {
-      const pg = t.closest(".pg"), id = t.dataset.sticky || t.dataset.cap;
-      later("it" + id, () => setPageData(pg.dataset.id, d => { const it = d.items.find(x => x.id === id); if (it) it[t.dataset.sticky ? "text" : "cap"] = t.innerText.trim(); }));
+    } else if (t.dataset.sticky || t.dataset.cap || t.dataset.tbox) {
+      const pg = t.closest(".pg"), id = t.dataset.sticky || t.dataset.cap || t.dataset.tbox;
+      later("it" + id, () => setPageData(pg.dataset.id, d => { const it = d.items.find(x => x.id === id); if (it) it[t.dataset.cap ? "cap" : "text"] = t.innerText.replace(/\n{3,}/g, "\n\n").trim(); }));
     } else if (t.dataset.freeTitle) {
       later("ft", () => { const h = loadHeft(); const f = (h.free || []).find(x => x.id === t.dataset.freeTitle); if (f) { f.title = t.innerText.trim(); saveHeft(h); } });
     } else if (t.dataset.field === "owner") {
@@ -520,7 +529,8 @@
     image: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/>',
     note: '<path d="M5 4h14v11l-5 5H5z"/><path d="M14 20v-5h5"/>',
     undo: '<path d="M9 7L4 12l5 5"/><path d="M4 12h10a6 6 0 010 12" transform="translate(0 -6)"/>',
-    plus: '<path d="M12 5v14M5 12h14"/>', close: '<path d="M6 6l12 12M18 6L6 18"/>'
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    text: '<path d="M5 6V4h14v2"/><path d="M12 4v16"/><path d="M9 20h6"/>', close: '<path d="M6 6l12 12M18 6L6 18"/>'
   };
   const icon = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${I[k]}</svg>`;
 
@@ -568,6 +578,7 @@
           <button type="button" class="tb" data-tool="pen" aria-label="Stift">${icon("pen")}<span>Stift</span></button>
           <button type="button" class="tb" data-tool="marker" aria-label="Textmarker">${icon("marker")}<span>Marker</span></button>
           <button type="button" class="tb" data-tool="eraser" aria-label="Radierer">${icon("eraser")}<span>Radierer</span></button>
+          <button type="button" class="tb" data-tool="text" aria-label="Textfeld">${icon("text")}<span>Text</span></button>
           <span class="tb-sep"></span>
           <label class="tb" aria-label="Bild einkleben">${icon("image")}<span>Bild</span><input type="file" id="hfFile" accept="image/*" multiple hidden></label>
           <button type="button" class="tb" id="hfNote" aria-label="Haftnotiz">${icon("note")}<span>Zettel</span></button>
@@ -592,12 +603,32 @@
 
     el.querySelector("#hfPrev").onclick = () => { openBook(); go(-1); };
     el.querySelector("#hfNext").onclick = () => { if (book.classList.contains("closed")) return openBook(); go(1); };
-    el.querySelectorAll("[data-tool]").forEach(b => b.onclick = () => { openBook(); setTool(b.dataset.tool); });
+    el.querySelectorAll("[data-tool]").forEach(b => b.onclick = () => {
+      openBook(); setTool(b.dataset.tool);
+      if (b.dataset.tool === "text") toast("Tippe auf die Seite, wo der Text hin soll");
+    });
     el.querySelector("#hfPalette").onclick = e => {
+      const sz = e.target.closest("[data-size]");
+      if (sz) { textSize = sz.dataset.size; setTool(tool); return; }
       const sw = e.target.closest("[data-color]"); if (!sw) return;
-      if (tool === "pen") color = sw.dataset.color; else markerColor = sw.dataset.color;
+      if (tool === "pen") color = sw.dataset.color; else if (tool === "marker") markerColor = sw.dataset.color; else textColor = sw.dataset.color;
       setTool(tool);
     };
+
+    // Text-Werkzeug: an der angetippten Stelle ein Textfeld anlegen
+    el.addEventListener("pointerdown", e => {
+      if (tool !== "text" || busy) return;
+      const sc = e.target.closest && e.target.closest(".sheets .pg-scroll");
+      if (!sc || e.target.closest(".it, [contenteditable], button, a, details, summary")) return;
+      e.preventDefault();
+      const pg = sc.closest(".pg"), layer = pg.querySelector(".pg-layer"), r = layer.getBoundingClientRect(), W = sc.clientWidth;
+      const w = 0.5;
+      const x = Math.max(0.02, Math.min(0.98 - w, (e.clientX - r.left) / W - 0.03));
+      const y = Math.max(0, (e.clientY - r.top) / W - 0.03);
+      const item = { id: uid(), type: "text", x: +x.toFixed(4), y: +y.toFixed(4), w, rot: 0, color: textColor, size: textSize, text: "" };
+      addItem(pg, item, true);
+      setTimeout(() => { const t = pg.querySelector(`[data-tbox="${item.id}"]`); if (t) t.focus(); }, 60);
+    });
     el.querySelector("#hfFile").onchange = e => { openBook(); upload([...e.target.files]); e.target.value = ""; };
     el.querySelector("#hfNote").onclick = () => {
       openBook();

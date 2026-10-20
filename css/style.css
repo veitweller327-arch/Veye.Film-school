@@ -1259,3 +1259,22 @@ html.notes-open .notes-tab { opacity: 0; pointer-events: none; }
   .tb { min-width: 38px; padding: 8px 7px; }
   .palette { width: 100%; justify-content: center; border-left: 0; margin: 4px 0 2px; padding: 6px 0 0; border-top: 1px solid var(--line2); }
 }
+
+/* Textfelder im Notizheft */
+[data-tool="text"] .sheets .pg-scroll { cursor: text; }
+.tbox { position: relative; padding: 1.2cqw 1.6cqw; border: .3cqw dashed transparent; border-radius: 1cqw; transition: border-color .2s, background .2s; }
+.it-text:hover .tbox, .it-text:focus-within .tbox { border-color: rgba(43,58,143,.3); background: rgba(244,238,225,.55); }
+.tbox-text { min-height: 6cqw; outline: none; white-space: pre-wrap; color: var(--ink, #2b3a8f); caret-color: var(--ink, #2b3a8f); font-family: var(--hand); font-weight: 400; overflow-wrap: anywhere; }
+.tbox-s .tbox-text { font-size: 3.4cqw; line-height: 5cqw; }
+.tbox-m .tbox-text { font: 600 5.4cqw/6.4cqw var(--script); }
+.tbox-l .tbox-text { font: 700 8.4cqw/9cqw var(--script); }
+.tbox-grip { position: absolute; top: -4.2cqw; left: 0; width: 9cqw; height: 3.6cqw; min-height: 14px; border-radius: 1.2cqw; cursor: grab; opacity: 0; transition: opacity .2s;
+             background: radial-gradient(circle, rgba(35,37,47,.55) 0 .45cqw, transparent .55cqw) 0 0 / 1.8cqw 1.8cqw, rgba(244,238,225,.9); border: .25cqw solid rgba(35,37,47,.25); }
+.it-text:hover .tbox-grip, .it-text:focus-within .tbox-grip { opacity: 1; }
+@media (hover: none) { .tbox-grip { opacity: .7; } }
+.it-text .it-del { top: -3cqw; right: -3cqw; }
+.pal-sep { width: 1px; align-self: stretch; background: var(--line2); margin: 0 4px; }
+.sz { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--line2); background: none; color: var(--muted); cursor: pointer; font-family: var(--script); font-weight: 700; line-height: 1; }
+.sz-s { font-size: 13px; } .sz-m { font-size: 17px; } .sz-l { font-size: 22px; }
+.sz.on { color: #17110a; background: var(--accent); border-color: var(--accent); }
+@media (max-width: 600px) { .hf-toast { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); max-width: calc(100vw - 32px); } }
