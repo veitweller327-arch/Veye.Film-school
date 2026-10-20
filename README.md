@@ -59,3 +59,8 @@ Beim Abschließen einer Lektion legt der KI-Assistent einen Lernzettel ins Notiz
 ## Digitales Notizheft (#/notizheft)
 
 `js/heft.js`: realistisches Notizbuch mit Ledereinband, Doppelseiten (Handy: Einzelseite) und Umblätter-Animation. Pro Lektion links der Lernzettel, rechts Zitate, eigene Notizen und Platz für Skizzen; dazu Innenseite, Inhaltsverzeichnis und freie Skizzenseiten. Werkzeuge: Stift, Textmarker, Radierer, Textfelder (Farbe, Größe S/M/L), Rückgängig, Bilder einkleben (Polaroid, verschieb- und skalierbar), Haftnotizen. Vollbild-Modus und Text-Markierungen (Textauswahl → Markerfarbe oder Unterstreichen, gespeichert als Textposition) inklusive. Zeichnungen und Positionen liegen in `localStorage` („veye:heft“), Bilder in IndexedDB.
+
+## Lernprofil, Wiederholen & Praxis
+
+- `js/lernen.js`: Jede Quizantwort (Schritt-Modus, Reels, ganze Lektion, Wiederholen) fließt in ein Leitner-System mit 5 Fächern (Abstände 1/3/7/16/35 Tage). Karten: Quizfragen, Lernzettel-Fragen, Fachbegriffe der begonnenen Lektionen. Daraus: Sicherheit pro Lektion, fällige Karten, Lernserie und der Bereich „Heute“ auf der Startseite (fällige Wiederholungen, nächste Lektion, schwächste Lektion).
+- `js/praxis.js`: Pro Lektion die Übung umsetzen, Standbild hochladen, drei Reflexionsfragen beantworten; der KI-Dozent gibt Feedback zum Bild. Reflexion und Feedback landen im Notizheft, das Bild als Polaroid im digitalen Heft.

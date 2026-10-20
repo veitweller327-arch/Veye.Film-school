@@ -136,6 +136,7 @@
           ${lesson.aufgabe ? `<div class="box task"><h4>Jetzt du – Praxis-Übung</h4>${esc(lesson.aufgabe)}</div>` : ""}
           <div class="row-gap">
             <button class="btn primary" id="stepDone">Lektion abschließen</button>
+            ${lesson.aufgabe ? `<a class="btn" href="#/lektion/${kurs.id}/${lesson.id}?praxis=1">Übung umsetzen & reflektieren</a>` : ""}
             <button class="btn" id="stepRestart">Nochmal von vorn</button>
             ${aiAvailable() ? `<button class="btn" id="stepToTutor">Mit KI-Tutor vertiefen</button>` : ""}
           </div>
@@ -161,7 +162,9 @@
       if (next) next.onclick = () => { state.pos++; save(); render(); scrollTop(); };
 
       root.querySelectorAll(".choice").forEach(b => b.onclick = () => {
-        state.answers[step.qi] = +b.dataset.ai; save(); render();
+        state.answers[step.qi] = +b.dataset.ai; save();
+        if (window.Lernen) window.Lernen.recordQuiz(kurs.id, lesson.id, step.qi, +b.dataset.ai === lesson.quiz[step.qi].richtig);
+        render();
       });
 
       if (step.type === "chunk") {
@@ -411,7 +414,9 @@ ${vids ? `\nVIDEOS ZU DIESER LEKTION (kannst du empfehlen):\n${vids}` : ""}`;
           </div>
           <div class="step-nav"><span></span><button class="btn primary" id="tNext" ${answered === null ? "disabled" : ""}>${answered === null ? "Erst antworten" : "Weiter →"}</button></div>`;
         root.querySelectorAll(".choice").forEach(b => b.onclick = () => {
-          answered = +b.dataset.ai; if (answered === q.richtig) score++; render();
+          answered = +b.dataset.ai; if (answered === q.richtig) score++;
+          if (window.Lernen) window.Lernen.recordQuiz(k.id, l.id, l.quiz.indexOf(q), answered === q.richtig);
+          render();
         });
         root.querySelector("#tNext").onclick = () => { pos++; answered = null; render(); };
       }
@@ -438,5 +443,12 @@ ${vids ? `\nVIDEOS ZU DIESER LEKTION (kannst du empfehlen):\n${vids}` : ""}`;
     return aiFn.json(prompt, opts).catch(e => { aiErrorText(e); throw e; });
   }
 
-  window.Tutor = { aiReady, aiAvailable, stepMode, tutorMode, training, ask, sampleJson, errorText: aiErrorText, htmlToText };
+  function sampleText(prompt, opts = {}) {
+    if (!aiAvailable()) return Promise.reject({ code: "not_granted" });
+    const o = { ...opts }; if (!o.images) delete o.images;
+    return aiFn(prompt, o).catch(e => { aiErrorText(e); throw e; });
+  }
+  const imageLimits = () => (aiFn && aiFn.limits ? aiFn.limits().catch(() => null) : Promise.resolve(null));
+
+  window.Tutor = { aiReady, aiAvailable, stepMode, tutorMode, training, ask, sampleJson, sampleText, imageLimits, md, errorText: aiErrorText, htmlToText };
 })();

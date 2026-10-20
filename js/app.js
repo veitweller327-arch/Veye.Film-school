@@ -162,20 +162,14 @@
         </div>
       </section>
 
-      ${nx && fertig ? `
-      <a class="resume k-${nx.k.id}" href="#/lektion/${nx.k.id}/${nx.l.id}">
-        <span class="play">▶</span>
-        <span><span class="label">${fertig ? "Als Nächstes" : "Hier beginnen"} · ${esc(nx.k.titel)}</span><strong>${esc(nx.l.titel)}</strong></span>
-        <span class="arrow">→</span>
-      </a>` : ""}
-
+      ${window.Lernen ? window.Lernen.todayHtml(nx) : ""}
       <div class="sec-head"><h2>Kurse</h2><span class="label">${KURSE.length} Kurse · ${total} Lektionen</span></div>
       <div class="course-grid">${KURSE.map(courseCard).join("")}</div>
 
       <div class="sec-head"><h2>Werkzeuge</h2><span class="label">Üben & nachschlagen</span></div>
       <div class="tools">
         <a class="tool" href="#/feed"><b>Lern-Feed</b><span>Alle Lektionen als Reels zum Wischen.</span></a>
-        <a class="tool" href="#/training"><b>Training</b><span>10 gemischte Fragen pro Runde.</span></a>
+        <a class="tool" href="#/training"><b>Wiederholen</b><span>Spaced Repetition: Karten kommen wieder, bevor du sie vergisst.</span></a>
         <a class="tool" href="#/labor"><b>Grading-Labor</b><span>Eigene Bilder graden, Scopes live lesen.</span></a>
         <a class="tool" href="#/videos"><b>Mediathek</b><span>${vids.length} Videos, Lektionen zugeordnet.</span></a>
         <a class="tool" href="#/glossar"><b>Glossar</b><span>${(window.GLOSSAR || []).length} Fachbegriffe von ACES bis Whip Pan.</span></a>
@@ -224,7 +218,7 @@
           <li class="${isDone(k.id, l.id) ? "done" : ""}">
             <a href="#/lektion/${k.id}/${l.id}">
               <span class="edl-no">${pad2(i + 1)}</span>
-              <span class="edl-title">${esc(l.titel)}<small>${window.Feed.lessonCards(k, l).length} Karten · ${(l.quiz || []).length} Fragen${(window.GRAFIKEN || {})[k.id + "/" + l.id] ? ` · ${window.GRAFIKEN[k.id + "/" + l.id].length} Grafiken` : ""}</small></span>
+              <span class="edl-title">${esc(l.titel)}<small>${(m => m === null ? "" : `${m} % sicher · `)(window.Lernen ? window.Lernen.mastery(k.id, l.id) : null)}${window.Feed.lessonCards(k, l).length} Karten · ${(l.quiz || []).length} Fragen${(window.GRAFIKEN || {})[k.id + "/" + l.id] ? ` · ${window.GRAFIKEN[k.id + "/" + l.id].length} Grafiken` : ""}</small></span>
               ${levelTag(l.level)}
               <span class="edl-state">✓</span>
             </a>
@@ -245,7 +239,8 @@
         <header class="lesson-head">
           <div class="crumbs"><a href="#/">Start</a><span>/</span><a href="#/kurs/${k.id}">${esc(k.titel)}</a><span>/</span>Lektion ${pad2(idx + 1)}</div>
           <h1>${esc(l.titel)}</h1>
-          <div class="lesson-meta">${levelTag(l.level)}<span class="label">${window.Feed.lessonCards(k, l).length} Karten · ${(l.quiz || []).length} Fragen</span>${erledigt ? `<span class="label acc">✓ abgeschlossen</span>` : ""}</div>
+          <div class="lesson-meta">${levelTag(l.level)}<span class="label">${window.Feed.lessonCards(k, l).length} Karten · ${(l.quiz || []).length} Fragen</span>${erledigt ? `<span class="label acc">✓ abgeschlossen</span>` : ""}
+            ${(m => m === null ? "" : `<a class="mastery-pill" href="#/training?k=${k.id}&l=${l.id}" title="Sicherheit aus deinen Quizantworten – antippen zum Auffrischen"><i style="--m:${m}%"></i>${m} % sicher</a>`)(window.Lernen ? window.Lernen.mastery(k.id, l.id) : null)}</div>
           ${(l.mentor || []).map(id => CREATORS.find(c => c.id === id)).filter(Boolean).map(c => `
             <div class="mentor-line">Orientiert an <strong>${esc(c.name)}</strong> · <a href="${esc(c.url)}" target="_blank" rel="noopener">Kanal ansehen</a></div>`).join("")}
         </header>
@@ -259,6 +254,8 @@
           <button class="reels-cta" id="reelsBtn"><span class="play">▶</span><span><strong>Als Reels</strong><small>wischen</small></span></button>
         </div>
         <div id="modeRoot"></div>
+
+        ${window.Praxis ? window.Praxis.section(k, l) : ""}
 
         <div class="sec-head"><h2>Videos</h2><span class="label">${vids.length ? pad2(vids.length) + " zugeordnet" : "Mediathek"}</span></div>
         ${vids.length
@@ -295,7 +292,7 @@
         root.innerHTML = `${window.injectGrafiken ? window.injectGrafiken(k.id, l, l.inhalt) : l.inhalt}
           ${l.aufgabe ? `<div class="box task"><h4>Praxis-Übung</h4>${esc(l.aufgabe)}</div>` : ""}
           ${l.quiz?.length ? quizHtml(l.quiz) : ""}`;
-        bindQuiz(l.quiz || []);
+        bindQuiz(l.quiz || [], k, l);
         enhanceTables(root);
         if (window.Terms) window.Terms.annotate(root);
       } else if (mode === "tutor") {
@@ -334,7 +331,7 @@
       </div>`;
   }
 
-  function bindQuiz(quiz) {
+  function bindQuiz(quiz, k, l) {
     const btn = document.getElementById("quizCheck");
     if (!btn) return;
     btn.onclick = () => {
@@ -342,6 +339,7 @@
       quiz.forEach((q, qi) => {
         const box = document.querySelector(`[data-q="${qi}"]`);
         const sel = box.querySelector("input:checked");
+        if (sel && k && l && window.Lernen) window.Lernen.recordQuiz(k.id, l.id, qi, +sel.value === q.richtig);
         box.querySelectorAll("label").forEach((lab, ai) => {
           lab.classList.remove("right", "wrong");
           if (ai === q.richtig) lab.classList.add("right");
@@ -461,11 +459,27 @@
     };
   }
 
-  function trainingPage() {
+  function trainingPage(query) {
+    const focus = query.k && query.l ? findLektion(query.k, query.l) : null;
     return `
-      <header class="page-head"><span class="label">Wiederholen</span><h1>Training</h1>
-      <p class="lead">10 zufällige Fragen aus allen Lektionen. Ideal zum Wiederholen – jeden Tag eine Runde.</p></header>
+      <header class="page-head"><span class="label">${focus ? "Auffrischen" : "Wiederholen"}</span><h1>${focus ? esc(focus.titel) : "Wiederholen"}</h1>
+      <p class="lead">${focus ? "Die unsichersten Karten dieser Lektion zuerst." : "Fragen und Fachbegriffe kommen genau dann wieder, wenn du sie zu vergessen drohst: Was du weißt, rückt in längere Abstände – was du nicht weißt, kommt sofort wieder."}</p></header>
+      <div class="tabs" id="trainTabs">
+        <button class="btn small active" data-tm="srs">${focus ? "Auffrischen" : "Fällige Karten"}</button>
+        <button class="btn small" data-tm="frei">Freies Quiz</button>
+      </div>
       <div id="trainRoot"></div>`;
+  }
+  function bindTraining(query) {
+    const root = document.getElementById("trainRoot");
+    const lessonKey = query.k && query.l ? `${query.k}/${query.l}` : null;
+    const show = m => {
+      document.querySelectorAll("[data-tm]").forEach(b => b.classList.toggle("active", b.dataset.tm === m));
+      if (m === "frei") window.Tutor.training(root, KURSE, isDone);
+      else window.Lernen.review(root, { lesson: lessonKey, onFree: () => show("frei") });
+    };
+    document.querySelectorAll("[data-tm]").forEach(b => b.onclick = () => show(b.dataset.tm));
+    show("srs");
   }
 
   function glossarPage() {
@@ -516,6 +530,8 @@
         const l = findLektion(parts[1], parts[2]);
         if (!l) return;
         bindLessonModes(findKurs(parts[1]), l);
+        if (window.Praxis) window.Praxis.bind(app, findKurs(parts[1]), l);
+        if (query.praxis) setTimeout(() => { const p = document.getElementById("praxis"); if (p) p.scrollIntoView({ behavior: "smooth", block: "start" }); }, 120);
         document.getElementById("doneBtn").onclick = () => { toggleDone(parts[1], parts[2]); route(); };
       };
     }
@@ -523,7 +539,7 @@
     else if (parts[0] === "labor") { html = laborPage(); after = () => window.Labor.mount(document.getElementById("laborRoot")); }
     else if (parts[0] === "notizheft") { html = `<div id="heftRoot"></div>`; after = () => window.Heft.mount(document.getElementById("heftRoot")); }
     else if (parts[0] === "feed") { html = feedPage(); after = bindFeed; }
-    else if (parts[0] === "training") { html = trainingPage(); after = () => window.Tutor.training(document.getElementById("trainRoot"), KURSE, isDone); }
+    else if (parts[0] === "training") { html = trainingPage(query); after = () => bindTraining(query); }
     else if (parts[0] === "glossar") {
       html = glossarPage();
       after = () => {
@@ -545,10 +561,16 @@
       a.classList.toggle("active", a.getAttribute("href").replace(/^#\//, "") === section);
     });
     document.getElementById("nav").classList.remove("open");
+    const due = window.Lernen ? window.Lernen.dueCount() : 0;
+    document.querySelectorAll(".due-count").forEach(b => { b.textContent = due ? String(due) : ""; });
   }
 
   const notesBtn = document.getElementById("notesBtn");
   if (notesBtn) notesBtn.onclick = () => window.Notes && window.Notes.toggle();
+  window.addEventListener("veye:lernen", () => {
+    const due = window.Lernen ? window.Lernen.dueCount() : 0;
+    document.querySelectorAll(".due-count").forEach(b => { b.textContent = due ? String(due) : ""; });
+  });
   document.getElementById("menuBtn").onclick = () => document.getElementById("nav").classList.toggle("open");
 
   let lastPath = null;

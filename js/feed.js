@@ -353,6 +353,7 @@
       if (choice && !choice.disabled) {
         const ai = +choice.dataset.ai;
         ctx.answers[qkey(c)] = ai; store.set("feedAnswers", ctx.answers);
+        if (window.Lernen) window.Lernen.recordQuiz(c.kurs.id, c.lesson.id, c.qi, ai === c.q.richtig);
         sec.querySelectorAll(".reel-choice").forEach((b, bi) => {
           b.disabled = true;
           b.classList.add(bi === c.q.richtig ? "right" : bi === ai ? "wrong" : "dim");

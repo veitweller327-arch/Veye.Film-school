@@ -878,5 +878,17 @@
   function sessionStorageGet(k) { try { return sessionStorage.getItem("veye:" + k); } catch { return null; } }
   function sessionStorageSet(k, v) { try { sessionStorage.setItem("veye:" + k, v); } catch { /* egal */ } }
 
-  window.Heft = { mount };
+  // Bild aus einem anderen Bereich (z. B. Praxis-Reflexion) auf eine Heftseite kleben
+  async function addImage(pageId, blob, cap) {
+    try {
+      const { blob: small, ratio } = await shrink(blob);
+      const id = uid();
+      const item = { id, type: "img", x: 0.1 + Math.random() * 0.2, y: 0.25 + Math.random() * 0.4, w: 0.6, h: 0.6 * ratio + 0.12, rot: +(Math.random() * 6 - 3).toFixed(1), cap: cap || "" };
+      if (!(await putImage(id, small))) item.data = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(small); });
+      setPageData(pageId, d => d.items.push(item));
+      return true;
+    } catch { return false; }
+  }
+
+  window.Heft = { mount, addImage };
 })();

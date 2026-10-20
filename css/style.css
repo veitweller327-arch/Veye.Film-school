@@ -1312,3 +1312,70 @@ mark.hl.fresh:not(.hl-u) { animation: hlSweep .6s var(--ease) both; }
 .hl-u-btn { font: 700 14px var(--font-body); text-decoration: underline; text-decoration-color: #ef6464; text-underline-offset: 3px; }
 .hl-x svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .hl-u-btn:hover, .hl-x:hover { background: rgba(255,255,255,.07); }
+
+/* ===================== Lernprofil: Heute, Wiederholen, Praxis ===================== */
+/* Heute */
+.today { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 900px) { .today { grid-template-columns: 1fr; } }
+.today-tile { display: grid; gap: 6px; align-content: start; padding: 20px; border-radius: 12px; text-decoration: none; color: var(--text);
+              background: var(--card); border: 1px solid var(--line); position: relative; overflow: hidden; transition: border-color .3s, transform .4s var(--ease); }
+.today-tile:hover { border-color: color-mix(in srgb, var(--c, var(--accent)) 50%, transparent); transform: translateY(-2px); }
+.today-tile b { font-family: var(--font-display); font-size: 20px; font-weight: 650; line-height: 1.2; }
+.today-tile > span:last-child { color: var(--muted); font-size: 14px; line-height: 1.5; }
+.today-tile::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--c, var(--line2)); }
+.today-tile.hot { --c: var(--accent); background: linear-gradient(140deg, color-mix(in srgb, var(--accent) 12%, var(--card)), var(--card) 60%); }
+.today-tile.hot b { color: var(--accent); }
+.due-count:empty { display: none; }
+.due-count { display: inline-grid; place-items: center; min-width: 17px; height: 17px; padding: 0 5px; margin-left: 6px; border-radius: 9px;
+             background: var(--accent); color: #17110a; font: 700 10px var(--font-mono); vertical-align: 1px; }
+@media (max-width: 900px) { nav a .due-count { height: 20px; min-width: 20px; font-size: 11px; vertical-align: 4px; } }
+
+/* Sicherheit */
+.mastery-pill { display: inline-flex; align-items: center; gap: 8px; font: 600 11px var(--font-mono); letter-spacing: .08em; text-transform: uppercase;
+                color: var(--muted); text-decoration: none; padding: 4px 10px 4px 6px; border: 1px solid var(--line2); border-radius: 99px; }
+.mastery-pill i { width: 34px; height: 5px; border-radius: 3px; background: linear-gradient(90deg, var(--c, var(--accent)) var(--m), rgba(255,238,214,.12) var(--m)); }
+.mastery-pill:hover { color: var(--text); border-color: var(--c, var(--accent)); }
+
+/* Wiederholen */
+.rv-card .q-title em { font-style: normal; color: var(--c, var(--accent)); }
+.rv-back { margin: 4px 0 6px; padding: 14px 16px; border-radius: 10px; background: var(--bg2); border-left: 2px solid var(--c, var(--accent)); font-size: 16px; line-height: 1.55; animation: rise .35s var(--ease) both; }
+.rv-hint { font-size: 13.5px; margin: 10px 0; }
+.rv-grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.rv-grade .btn:first-child:hover { border-color: var(--bad); color: var(--bad); }
+.rv-src { font-size: 13px; align-self: center; }
+.rv-empty, .rv-done { display: grid; gap: 10px; justify-items: start; padding: 28px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+.rv-empty p, .rv-done p { margin: 0; max-width: 60ch; }
+.rv-big { font-family: var(--font-display); font-size: clamp(26px, 4vw, 36px); font-weight: 700; font-stretch: 108%; }
+.rv-boxes { display: flex; gap: 14px; align-items: flex-end; margin: 8px 0; }
+.rv-box { display: grid; justify-items: center; gap: 4px; font: 500 10.5px var(--font-mono); color: var(--muted); }
+.rv-box b { font-size: 13px; color: var(--text); }
+.rv-bar { width: 26px; height: 64px; border-radius: 4px; background: rgba(255,238,214,.06); display: flex; align-items: flex-end; overflow: hidden; }
+.rv-bar i { display: block; width: 100%; background: linear-gradient(var(--accent), color-mix(in srgb, var(--accent) 50%, transparent)); border-radius: 4px 4px 0 0; transition: height .6s var(--ease); }
+
+/* Praxis */
+.px-card { border: 1px solid var(--line); border-radius: 12px; background: var(--card); padding: 20px; display: grid; gap: 18px; }
+.px-task p { margin: 6px 0 0; font-size: 16px; line-height: 1.6; color: #e0dbd4; }
+.px-task .label.acc { color: var(--c, var(--accent)); }
+.px-form { display: grid; gap: 14px; }
+.px-drop { position: relative; display: grid; place-items: center; min-height: 120px; padding: 16px; border: 1px dashed var(--line2); border-radius: 10px;
+           background: var(--bg2); cursor: pointer; text-align: center; transition: border-color .2s, background .2s; overflow: hidden; }
+.px-drop:hover { border-color: var(--c, var(--accent)); background: var(--card2); }
+.px-drop-in { display: grid; gap: 4px; font-size: 14px; color: var(--muted); } .px-drop-in b { color: var(--text); font-weight: 600; }
+.px-drop.has .px-drop-in { display: none; }
+.px-prev { max-height: 240px; max-width: 100%; border-radius: 6px; }
+.px-q { display: grid; gap: 6px; } .px-q span { font-weight: 600; font-size: 14.5px; }
+.px-q textarea { min-height: 64px; resize: none; }
+.px-note { margin: 0; font-size: 13.5px; min-height: 1em; }
+.px-try { display: grid; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid var(--line); animation: rise .4s var(--ease) both; }
+.px-try-grid { display: grid; grid-template-columns: minmax(0, 220px) 1fr; gap: 16px; align-items: start; }
+.px-try-grid.no-img { grid-template-columns: 1fr; }
+@media (max-width: 600px) { .px-try-grid { grid-template-columns: 1fr; } }
+.px-try-grid img { width: 100%; border-radius: 6px; border: 1px solid var(--line); }
+.px-try dl { margin: 0; display: grid; gap: 10px; }
+.px-try dt { font: 600 10.5px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.px-try dd { margin: 2px 0 0; font-size: 14.5px; line-height: 1.55; white-space: pre-wrap; }
+.px-feedback { padding: 14px 16px; border-radius: 10px; background: linear-gradient(150deg, color-mix(in srgb, var(--c, var(--accent)) 10%, var(--bg2)), var(--bg2) 60%);
+               border: 1px solid color-mix(in srgb, var(--c, var(--accent)) 30%, transparent); font-size: 15px; line-height: 1.6; }
+.px-feedback .label.acc { color: var(--c, var(--accent)); display: block; margin-bottom: 6px; }
+.px-feedback p { margin: 0 0 8px; } .px-feedback ul { margin: 0 0 8px; padding-left: 20px; }
+.px-start { justify-self: start; }
