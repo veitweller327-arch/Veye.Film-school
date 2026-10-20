@@ -69,3 +69,7 @@ Beim Abschließen einer Lektion legt der KI-Assistent einen Lernzettel ins Notiz
 ## Als App installieren (PWA)
 
 `manifest.webmanifest`, `sw.js` und `icons/` machen die Plattform installierbar (eigenes Icon, Vollbild, offline). Dafür muss der Ordner per HTTPS gehostet werden, z. B. mit GitHub Pages (Repository öffentlich → Settings → Pages → Branch `master`, Ordner `/`). Danach die Seite am Handy öffnen: Android „Installieren“, iPhone „Teilen → Zum Home-Bildschirm“. KI-Funktionen (Tutor, Lernzettel per KI, Dozenten-Feedback) gibt es nur in der Claude-Webversion; in der App greifen die Offline-Varianten. Bei Änderungen an Dateien `VERSION` in `sw.js` erhöhen.
+
+## Geräte-Synchronisierung & Backup
+
+`js/sync.js`: In der Claude-Webversion werden `done`, `notes`, `heft`, `srs`, `aktiv`, `praxis`, `saved`, `feedAnswers`, `videos` und die Notizheft-Bilder automatisch im privaten Speicherbereich des Claude-Kontos abgeglichen (`data/users/<id>/…`, 200-KB-Teile). Haben sich beide Seiten geändert, wird zusammengeführt (Notizen je Lektion, Karten nach letzter Antwort, Heftseiten nach Elementen). Seite „Geräte & Backup“ (`#/sync`): Status, manueller Abgleich, Backup-Datei speichern/laden (z. B. über iCloud Drive) – auch in der installierten App.

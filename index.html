@@ -19,6 +19,7 @@
 <body>
   <header class="topbar">
     <a class="logo" href="#/" aria-label="Veye Film School – Start"><b>VEYE</b><span>Film School</span></a>
+    <a class="sync-btn" id="syncBtn" href="#/sync" aria-label="Geräte & Backup" title="Geräte & Backup"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 00.6-7.96A6 6 0 006.2 9.1 4.5 4.5 0 007 18z"/></svg><i></i></a>
     <button class="notes-btn" id="notesBtn" type="button" aria-label="Notizheft öffnen">Notizen<b class="notes-count"></b></button>
     <button class="menu-btn" id="menuBtn" aria-label="Menü öffnen">MENÜ</button>
     <nav id="nav">
@@ -35,7 +36,7 @@
   <main id="app"></main>
 
   <footer class="footer">
-    <div class="footer-in"><b>VEYE</b><span>Filmstudium · Color Grading · Instagram Edits</span><span>Fortschritt wird nur in diesem Browser gespeichert.</span></div>
+    <div class="footer-in"><b>VEYE</b><span>Filmstudium · Color Grading · Instagram Edits</span><a href="#/sync" id="syncFoot">Geräte &amp; Backup</a></div>
   </footer>
 
   <script src="data/kurse.js"></script>
@@ -51,6 +52,7 @@
   <script src="js/lernen.js"></script>
   <script src="js/praxis.js"></script>
   <script src="js/breakdown.js"></script>
+  <script src="js/sync.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

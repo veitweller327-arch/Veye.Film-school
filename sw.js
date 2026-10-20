@@ -3,12 +3,12 @@
  * Eigene Dateien: aus dem Cache, im Hintergrund aktualisiert. Schriften: zur Laufzeit zwischengespeichert.
  * Bei Änderungen an Dateien VERSION erhöhen.
  */
-const VERSION = "veye-v1";
+const VERSION = "veye-v2";
 const SHELL = [
   "./", "./index.html", "./manifest.webmanifest", "./css/style.css",
   "./data/kurse.js", "./data/begriffe.js", "./data/videos.js", "./data/grafiken.js",
   "./js/labor.js", "./js/terms.js", "./js/tutor.js", "./js/feed.js", "./js/notes.js", "./js/heft.js",
-  "./js/lernen.js", "./js/praxis.js", "./js/breakdown.js", "./js/app.js",
+  "./js/lernen.js", "./js/praxis.js", "./js/breakdown.js", "./js/sync.js", "./js/app.js",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"
 ];
 

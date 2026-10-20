@@ -214,6 +214,68 @@
     if (x) x.onclick = () => { store.set("installHidden", true); route(); };
   }
 
+  /* ---------------- Geräte & Backup ---------------- */
+  function syncPage() {
+    const i = window.Sync ? window.Sync.info() : { cloud: false };
+    const app = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+    return `
+      <header class="page-head"><span class="label">Geräte & Backup</span><h1>Überall weiterlernen</h1>
+        <p class="lead">Notizen, Notizheft mit Skizzen und Fotos, Lernfortschritt, Wiederholungskarten und Praxis-Reflexionen – auf Computer und Handy gleich.</p></header>
+      <div class="sync-grid">
+        <section class="sync-card ${i.cloud ? "on" : ""}" id="syncCard">
+          <span class="label acc">Automatisch · Claude-Konto</span>
+          <h2 id="syncTitle">${i.cloud ? "Synchronisierung aktiv" : "Nicht verbunden"}</h2>
+          <p id="syncText"></p>
+          <div class="row-gap">${i.cloud ? `<button class="btn primary" id="syncNow">Jetzt synchronisieren</button>` : ""}</div>
+          <ul class="sync-how">
+            <li>Öffne die Veye-Webseite auf jedem Gerät über <b>denselben Link</b> und mit <b>demselben Claude-Konto</b>.</li>
+            <li>Änderungen werden beim Öffnen, alle paar Sekunden und beim Wechsel der App abgeglichen.</li>
+            <li>Hast du auf beiden Geräten gearbeitet, wird zusammengeführt – nichts wird überschrieben.</li>
+            <li>Der Speicherbereich ist privat: Nur du siehst ihn, auch wenn du die Seite teilst.</li>
+          </ul>
+        </section>
+        <section class="sync-card">
+          <span class="label acc">Backup-Datei · z. B. iCloud Drive</span>
+          <h2>Sichern & übertragen</h2>
+          <p>Speichert alles in einer Datei – inklusive Bilder. Auf dem iPhone wählst du beim Speichern <b>„In Dateien sichern“ → iCloud Drive</b>. Auf dem anderen Gerät lädst du sie hier wieder; vorhandene Daten werden zusammengeführt.${app ? " Für die installierte App ist das der Weg, um Daten mit dem Computer zu teilen." : ""}</p>
+          <div class="row-gap">
+            <button class="btn primary" id="bkSave">Backup speichern</button>
+            <label class="btn" for="bkFile">Backup laden<input type="file" id="bkFile" accept="application/json,.json" hidden></label>
+          </div>
+          <p class="muted" id="bkNote"></p>
+        </section>
+      </div>`;
+  }
+  function bindSync() {
+    const upd = i => {
+      const t = document.getElementById("syncText"); if (!t) return;
+      const ago = i.lastSync ? Math.max(0, Math.round((Date.now() - i.lastSync) / 60000)) : null;
+      t.textContent = !i.cloud ? (i.status === "nur lokal"
+          ? "Diese Ansicht ist nicht mit einem Claude-Konto verbunden (z. B. installierte App oder lokale Datei). Nutze hier die Backup-Datei."
+          : "Verbindung wird hergestellt …")
+        : i.status === "läuft" ? "Gleiche ab …"
+        : i.status === "fehler" ? "Der letzte Abgleich ist fehlgeschlagen. Er wird automatisch erneut versucht."
+        : i.status === "voll" ? "Der Speicher ist voll – entferne ein paar große Bilder aus dem Notizheft."
+        : `Zuletzt abgeglichen ${ago === 0 ? "gerade eben" : ago === 1 ? "vor 1 Minute" : `vor ${ago} Minuten`}.`;
+      document.getElementById("syncTitle").textContent = i.cloud ? "Synchronisierung aktiv" : "Nicht verbunden";
+      document.getElementById("syncCard").classList.toggle("on", !!i.cloud);
+    };
+    if (window.Sync) { upd(window.Sync.info()); const off = window.Sync.onChange(i => { if (!document.getElementById("syncText")) off(); else upd(i); }); }
+    const now = document.getElementById("syncNow"); if (now) now.onclick = () => window.Sync.syncNow();
+    const note = document.getElementById("bkNote");
+    document.getElementById("bkSave").onclick = async () => {
+      note.textContent = "Backup wird erstellt …";
+      try { await window.Sync.exportBackup(); note.textContent = "Backup erstellt."; }
+      catch (e) { note.textContent = e && e.code === "declined" ? "Speichern abgebrochen." : "Backup konnte nicht gespeichert werden."; }
+    };
+    document.getElementById("bkFile").onchange = async e => {
+      const f = e.target.files[0]; if (!f) return;
+      try { const n = await window.Sync.importBackup(f); note.textContent = `Backup geladen (${n} Bereiche zusammengeführt).`; }
+      catch (err) { note.textContent = err.message || "Datei konnte nicht gelesen werden."; }
+      e.target.value = "";
+    };
+  }
+
   function kursePage() {
     return `
       <header class="page-head"><span class="label">Übersicht</span><h1>Kurse</h1>
@@ -567,6 +629,7 @@
       if (window.Breakdown) window.Breakdown.mount(document.getElementById("breakdownRoot"));
       if (query.breakdown) setTimeout(() => document.getElementById("breakdownRoot").scrollIntoView({ behavior: "smooth" }), 150);
     }; }
+    else if (parts[0] === "sync") { html = syncPage(); after = bindSync; }
     else if (parts[0] === "notizheft") { html = `<div id="heftRoot"></div>`; after = () => window.Heft.mount(document.getElementById("heftRoot")); }
     else if (parts[0] === "feed") { html = feedPage(); after = bindFeed; }
     else if (parts[0] === "training") { html = trainingPage(query); after = () => bindTraining(query); }
@@ -604,6 +667,18 @@
   // Offline-Fähigkeit (nur wenn gehostet; in der Claude-Webversion gibt es kein Manifest)
   if ("serviceWorker" in navigator && document.querySelector('link[rel="manifest"]') && /^https?:$/.test(location.protocol)) {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+  // Daten vom anderen Gerät angekommen → Ansicht auffrischen (nicht beim Tippen)
+  window.addEventListener("veye:sync", () => {
+    window.dispatchEvent(new CustomEvent("veye:notes"));
+    if (window.Notes) window.Notes.updateBadge();
+    const a = document.activeElement;
+    const typing = a && (a.isContentEditable || /INPUT|TEXTAREA|SELECT/.test(a.tagName));
+    if (!typing && !document.querySelector(".reels") && !/^#\/(notizheft|sync)/.test(location.hash)) route();
+  });
+  if (window.Sync) {
+    const dot = i => { const b = document.getElementById("syncBtn"); if (b) { b.dataset.state = i.cloud ? (i.status === "fehler" || i.status === "voll" ? "err" : i.status === "läuft" ? "busy" : "ok") : "off"; b.title = i.cloud ? "Synchronisiert über dein Claude-Konto" : "Geräte & Backup"; } };
+    dot(window.Sync.info()); window.Sync.onChange(dot);
   }
   document.getElementById("menuBtn").onclick = () => document.getElementById("nav").classList.toggle("open");
 

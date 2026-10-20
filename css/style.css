@@ -1419,3 +1419,23 @@ mark.hl.fresh:not(.hl-u) { animation: hlSweep .6s var(--ease) both; }
 @media (max-width: 520px) { .install { grid-template-columns: auto 1fr auto; } .install .btn { grid-column: 1 / -1; } }
 /* im installierten App-Modus: Platz für die Statusleiste */
 @media (display-mode: standalone) { body { padding-top: env(safe-area-inset-top, 0px); } }
+
+/* ---------- Geräte & Backup ---------- */
+.sync-btn { position: relative; display: grid; place-items: center; width: 34px; height: 34px; margin-left: 10px; border-radius: 8px; color: var(--muted); border: 1px solid transparent; }
+.sync-btn:hover { color: var(--text); border-color: var(--line2); }
+.sync-btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; }
+.sync-btn i { position: absolute; right: 5px; bottom: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--dim); box-shadow: 0 0 0 2px var(--bg); }
+.sync-btn[data-state="ok"] i { background: var(--ok); }
+.sync-btn[data-state="busy"] i { background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+.sync-btn[data-state="err"] i { background: var(--bad); }
+@media (max-width: 899px) { .sync-btn { margin-left: auto; } .notes-btn { margin-left: 6px; } }
+.sync-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 860px) { .sync-grid { grid-template-columns: 1fr; } }
+.sync-card { display: grid; gap: 12px; align-content: start; padding: 22px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+.sync-card h2 { margin: 0; font-size: 24px; }
+.sync-card p { margin: 0; color: #c9c4bd; font-size: 15px; line-height: 1.6; }
+.sync-card.on { border-color: color-mix(in srgb, var(--ok) 35%, transparent); }
+.sync-card.on h2::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--ok); margin-right: 10px; vertical-align: 4px; box-shadow: 0 0 10px var(--ok); }
+.sync-how { margin: 6px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; }
+.sync-how b, .sync-card p b { color: var(--text); font-weight: 600; }
+.footer a { color: var(--muted); text-decoration: none; } .footer a:hover { color: var(--text); }
