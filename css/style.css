@@ -1408,3 +1408,14 @@ mark.hl.fresh:not(.hl-u) { animation: hlSweep .6s var(--ease) both; }
 .bd-result .label.acc { display: block; margin-bottom: 8px; }
 .bd-result p { margin: 0 0 8px; } .bd-result ul { margin: 0 0 10px; padding-left: 20px; }
 .bd-saved { font-size: 13px; }
+
+/* ---------- App-Installation ---------- */
+.install { display: grid; grid-template-columns: auto 1fr auto auto; gap: 14px; align-items: center; margin-top: 28px; padding: 14px 16px;
+           border: 1px solid var(--line2); border-radius: 12px; background: var(--card); }
+.install img { border-radius: 11px; display: block; }
+.install b { display: block; font-family: var(--font-display); font-size: 16px; }
+.install span { font-size: 13.5px; color: var(--muted); } .install strong { color: var(--text); font-weight: 600; }
+.install-x { background: none; border: 0; color: var(--dim); cursor: pointer; font-size: 14px; padding: 6px; }
+@media (max-width: 520px) { .install { grid-template-columns: auto 1fr auto; } .install .btn { grid-column: 1 / -1; } }
+/* im installierten App-Modus: Platz für die Statusleiste */
+@media (display-mode: standalone) { body { padding-top: env(safe-area-inset-top, 0px); } }

@@ -163,6 +163,8 @@
       </section>
 
       ${window.Lernen ? window.Lernen.todayHtml(nx) : ""}
+      ${installHint()}
+
       <div class="sec-head"><h2>Kurse</h2><span class="label">${KURSE.length} Kurse · ${total} Lektionen</span></div>
       <div class="course-grid">${KURSE.map(courseCard).join("")}</div>
 
@@ -188,6 +190,28 @@
         <li><span class="label">Woche 5–6</span><p>Vertiefung: Commercial-Licht, False Color, Schnitttheorie, Log, Looks.</p></li>
         <li><span class="label">Danach</span><p>Kinetic Editing, Sounddesign, Effekte – und jede Woche ein Reel.</p></li>
       </ol>`;
+  }
+
+  /* ---------------- Als App installieren (nur in der gehosteten Version mit Manifest) ---------------- */
+  let installEvent = null;
+  window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvent = e; if (location.hash === "" || location.hash === "#/") route(); });
+  const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  function installHint() {
+    if (!document.querySelector('link[rel="manifest"]') || standalone() || store.get("installHidden", false)) return "";
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if (!installEvent && !ios) return "";
+    return `<div class="install">
+      <img src="icons/icon-192.png" alt="" width="48" height="48">
+      <div><b>Veye als App</b><span>${ios ? "In Safari unten auf <strong>Teilen</strong> tippen, dann <strong>Zum Home-Bildschirm</strong>." : "Mit eigenem Icon, im Vollbild und auch offline."}</span></div>
+      ${ios ? "" : `<button class="btn primary small" id="installBtn">Installieren</button>`}
+      <button class="install-x" id="installX" aria-label="Hinweis ausblenden">✕</button>
+    </div>`;
+  }
+  function bindInstall() {
+    const b = document.getElementById("installBtn");
+    if (b) b.onclick = async () => { if (!installEvent) return; installEvent.prompt(); await installEvent.userChoice.catch(() => null); installEvent = null; route(); };
+    const x = document.getElementById("installX");
+    if (x) x.onclick = () => { store.set("installHidden", true); route(); };
   }
 
   function kursePage() {
@@ -523,7 +547,7 @@
     const parts = path.split("/").filter(Boolean);
 
     let html, after = null;
-    if (!parts.length) html = home();
+    if (!parts.length) { html = home(); after = bindInstall; }
     else if (parts[0] === "kurse") html = kursePage();
     else if (parts[0] === "kurs") html = kursPage(parts[1]);
     else if (parts[0] === "lektion") {
@@ -577,6 +601,10 @@
     const due = window.Lernen ? window.Lernen.dueCount() : 0;
     document.querySelectorAll(".due-count").forEach(b => { b.textContent = due ? String(due) : ""; });
   });
+  // Offline-Fähigkeit (nur wenn gehostet; in der Claude-Webversion gibt es kein Manifest)
+  if ("serviceWorker" in navigator && document.querySelector('link[rel="manifest"]') && /^https?:$/.test(location.protocol)) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
   document.getElementById("menuBtn").onclick = () => document.getElementById("nav").classList.toggle("open");
 
   let lastPath = null;

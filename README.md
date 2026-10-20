@@ -65,3 +65,7 @@ Beim Abschließen einer Lektion legt der KI-Assistent einen Lernzettel ins Notiz
 - `js/lernen.js`: Jede Quizantwort (Schritt-Modus, Reels, ganze Lektion, Wiederholen) fließt in ein Leitner-System mit 5 Fächern (Abstände 1/3/7/16/35 Tage). Karten: Quizfragen, Lernzettel-Fragen, Fachbegriffe der begonnenen Lektionen. Daraus: Sicherheit pro Lektion, fällige Karten, Lernserie und der Bereich „Heute“ auf der Startseite (fällige Wiederholungen, nächste Lektion, schwächste Lektion).
 - `js/praxis.js`: Pro Lektion die Übung umsetzen, Standbild hochladen, drei Reflexionsfragen beantworten; der KI-Dozent gibt Feedback zum Bild. Reflexion und Feedback landen im Notizheft, das Bild als Polaroid im digitalen Heft.
 - `js/breakdown.js`: Breakdown-Trainer im Grading-Labor – Standbild hochladen, selbst analysieren (Einstellungsgröße, Perspektive, Key-Richtung, Härte, Kontrast, Farbe), danach Auflösung durch den KI-Dozenten mit Vergleich; Ergebnis im Notizheft.
+
+## Als App installieren (PWA)
+
+`manifest.webmanifest`, `sw.js` und `icons/` machen die Plattform installierbar (eigenes Icon, Vollbild, offline). Dafür muss der Ordner per HTTPS gehostet werden, z. B. mit GitHub Pages (Repository öffentlich → Settings → Pages → Branch `master`, Ordner `/`). Danach die Seite am Handy öffnen: Android „Installieren“, iPhone „Teilen → Zum Home-Bildschirm“. KI-Funktionen (Tutor, Lernzettel per KI, Dozenten-Feedback) gibt es nur in der Claude-Webversion; in der App greifen die Offline-Varianten. Bei Änderungen an Dateien `VERSION` in `sw.js` erhöhen.

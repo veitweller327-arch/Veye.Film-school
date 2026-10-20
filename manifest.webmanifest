@@ -1,0 +1,23 @@
+{
+  "name": "Veye Film School",
+  "short_name": "Veye",
+  "description": "Filmstudium, Color Grading und Instagram-Edits – mit Reels, Wiederholen, Notizheft und Praxis.",
+  "lang": "de",
+  "start_url": "./#/",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0a0b",
+  "theme_color": "#0a0a0b",
+  "categories": ["education", "photo", "video"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Wiederholen", "url": "./#/training", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Notizheft", "url": "./#/notizheft", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Lern-Feed", "url": "./#/feed", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
