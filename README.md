@@ -47,3 +47,7 @@ Alle Lektionen stehen in `data/kurse.js` – neue Lektion = neues Objekt im `lek
 ## Fachbegriffe mit Erklärung
 
 `data/begriffe.js` erweitert das Glossar (167 Begriffe) und definiert Schreibvarianten. `js/terms.js` markiert in Lektionen, Schritt-Modus, Reels und Tutor-Antworten jeden Fachbegriff beim ersten Vorkommen; beim Hovern, Fokussieren oder Antippen erscheint die Erklärung.
+
+## Notizheft
+
+`js/notes.js`: Seitenleiste (Desktop: Reiter am rechten Rand, Handy: „Notizen“ in der Kopfzeile). Markierter Text („＋ In Notizheft“) und in den Reels gemerkte Karten landen als Zitat unter der passenden Lektion; jede Lektion bekommt automatisch eine Überschrift und ein eigenes Notizfeld. Gespeichert wird im Browser; „Alles kopieren“ exportiert alles als Text.

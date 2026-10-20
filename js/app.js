@@ -239,7 +239,7 @@
     const erledigt = isDone(kid, lid);
 
     return `
-      <article class="lesson k-${k.id}">
+      <article class="lesson k-${k.id}" data-notes-k="${k.id}" data-notes-l="${l.id}">
         <header class="lesson-head">
           <div class="crumbs"><a href="#/">Start</a><span>/</span><a href="#/kurs/${k.id}">${esc(k.titel)}</a><span>/</span>Lektion ${pad2(idx + 1)}</div>
           <h1>${esc(l.titel)}</h1>
@@ -544,6 +544,8 @@
     document.getElementById("nav").classList.remove("open");
   }
 
+  const notesBtn = document.getElementById("notesBtn");
+  if (notesBtn) notesBtn.onclick = () => window.Notes && window.Notes.toggle();
   document.getElementById("menuBtn").onclick = () => document.getElementById("nav").classList.toggle("open");
 
   let lastPath = null;

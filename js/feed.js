@@ -231,7 +231,7 @@
         <a class="rail-btn" href="#/lektion/${c.kurs.id}/${c.lesson.id}" data-act="open" aria-label="Lektion öffnen"><span class="ico">↗</span><span>Lektion</span></a>
       </div>`;
     const layout = ["l1", "l2", "l3", "l4"][i % 4];
-    return `<section class="reel reel-${c.type} theme-${c.kurs.id} ${layout}" data-i="${i}">
+    return `<section class="reel reel-${c.type} theme-${c.kurs.id} ${layout}" data-i="${i}" data-notes-k="${c.kurs.id}" data-notes-l="${c.lesson.id}" data-notes-src="Reels · markiert">
       <div class="reel-bg"></div>
       <div class="reel-body">${bodyHtml(c, i, total, ctx)}</div>
       ${rail}
@@ -375,6 +375,14 @@
           list.push({ ...rest, id, kurs: kurs.id, lektion: lesson.id, first: false });
         }
         store.set("saved", list);
+        if (window.Notes) {
+          if (idx >= 0) window.Notes.removeRef(id);
+          else {
+            const body = c.type === "bild" ? `${c.heading}: ${(c.bild && (c.bild.text || c.bild.alt)) || "Grafik"}`
+              : textOf(cardText(c).split("\n").slice(1).join("\n")) || c.heading;
+            window.Notes.add(c.kurs.id, c.lesson.id, { text: body, quelle: `Reels · ${c.type === "quiz" ? "Quizfrage" : c.heading}`, ref: id });
+          }
+        }
         btn.classList.toggle("on", idx < 0);
         btn.setAttribute("aria-pressed", idx < 0);
         btn.querySelector(".ico").textContent = idx < 0 ? "★" : "☆";
