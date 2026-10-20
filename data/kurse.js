@@ -143,6 +143,7 @@ window.KURSE = [
 <h3>Motiviertes Licht</h3>
 <p>Im Film soll Licht eine glaubhafte Quelle haben (Fenster, Lampe, Bildschirm). Profis setzen ihre Lampen so, dass sie diese Quelle „nachbauen“.</p>
 <div class="box tip"><h4>Ohne Equipment</h4>Ein Fenster ist die beste kostenlose Softbox. Person seitlich ans Fenster setzen (Key), weiße Wand oder Styroporplatte gegenüber als Fill.</div>
+<p><strong>Weiter:</strong> Wie Werbefilm-Profis Licht formen (große Bounces, Negative Fill, Sonne als Backlight), zeigt die nächste Lektion nach der Methode von <a href="#/lektion/film/licht-commercial">The Wandering DP</a>.</p>
 `,
         aufgabe: "Baue mit Fenster + Schreibtischlampe + weißem Karton ein 3-Punkt-Licht. Mache je ein Foto als High Key und als Low Key.",
         quiz: [
@@ -153,7 +154,140 @@ window.KURSE = [
         quellen: [
           { titel: "Wikipedia – Three-point lighting", url: "https://en.wikipedia.org/wiki/Three-point_lighting" },
           { titel: "Wikipedia – Farbtemperatur", url: "https://de.wikipedia.org/wiki/Farbtemperatur" },
-          { titel: "StudioBinder – Film Lighting Techniques", url: "https://www.studiobinder.com/blog/film-lighting-techniques/" }
+          { titel: "StudioBinder – Film Lighting Techniques", url: "https://www.studiobinder.com/blog/film-lighting-techniques/" },
+          { titel: "The Wandering DP (YouTube) – Licht-Breakdowns aus Werbefilmen", url: "https://youtube.com/@wanderingdp" }
+        ]
+      },
+      {
+        id: "licht-commercial",
+        titel: "Licht wie ein Commercial-DP (Wandering DP)",
+        level: "vertiefung",
+        mentor: ["wanderingdp"],
+        inhalt: `
+<p>Patrick O'Sullivan – <strong>The Wandering DP</strong> – ist Kameramann für Werbefilme (seit 2009, hunderte Commercials). Bevor er DP wurde, war er <strong>Colorist</strong>. Sein Lernweg: Lieblingsclips Bild für Bild analysieren und die Lichtmuster dahinter rekonstruieren. Genau diese Methode – <em>Breakdowns</em> – ist der Kern seines Kanals und Podcasts.</p>
+
+<h3>1. „Soften, then soften again“</h3>
+<p>Sein Grundprinzip bei Tageslicht-Außenaufnahmen: Licht <strong>weicher machen – und dann noch mal weicher</strong>. Commercial-Look entsteht durch sehr große, weiche Quellen:</p>
+<ul>
+<li><strong>Großer Bounce als Key:</strong> Statt eine Lampe direkt auf die Person zu richten, wird z. B. ein 12×12-Fuß-Rahmen mit Ultra Bounce (weißer Reflexstoff) angeleuchtet – das reflektierte Licht ist der Key.</li>
+<li><strong>Diffusion in Lagen:</strong> Licht durch Stoffrahmen, Gardinen (Sheers) oder sogar ein Bettlaken schicken.</li>
+<li>Low Budget: Ein weißes Bettlaken vor einer günstigen LED funktioniert nach demselben Prinzip.</li>
+</ul>
+
+<h3>2. Negative Fill – Kontrast durch Wegnehmen</h3>
+<p>Weiches Licht von einer großen Quelle strahlt überall hin und macht das Bild flach. Die Lösung ist <strong>Negative Fill</strong>: schwarze Flächen (Floppies, Rahmen mit schwarzem Stoff, schwarzer Molton) auf der Schattenseite. Sie <em>schlucken</em> Streulicht und geben dem Gesicht wieder Form.</p>
+<ul>
+<li>Typisch in seinen Breakdowns: großer weicher Key auf einer Seite, großer schwarzer Rahmen auf der anderen.</li>
+<li>Mehrere kleinere schwarze Flächen erlauben feineres Dosieren des Kontrasts.</li>
+<li>Für dich: schwarzer Stoff, schwarzer Karton oder einfach eine dunkle Wand auf der Schattenseite.</li>
+</ul>
+
+<h3>3. Sonne als Backlight</h3>
+<p>Draußen wird die Person so gedreht, dass die <strong>Sonne von hinten</strong> kommt (Haarlicht/Kante). Die harte Sonne von vorne wird vermieden. Den Key liefert dann ein großer Bounce oder eine diffuse Quelle von vorne-seitlich. Gleiches Prinzip bei Autos und Produkten: Objekt so platzieren, dass die Sonne es von hinten konturiert.</p>
+
+<h3>4. Fenster richtig nutzen</h3>
+<ul>
+<li>Fenster brennen im Bild schnell aus → Stoff/Diffusion direkt aufs Fenster, damit der Hintergrund kontrolliert bleibt.</li>
+<li>Key durch Gardinen (Sheers) – das Fenster wird zur riesigen Softbox.</li>
+<li>Ist es draußen grau und regnerisch, „bringt man seine eigene Sonne mit“: eine starke Lampe von außen durch einen Diffusionsrahmen am Fenster.</li>
+</ul>
+
+<h3>5. Belichtung in Blendenstufen denken</h3>
+<p>Ein Ausgangspunkt aus seinem Location-Lighting-Tutorial:</p>
+<table>
+<tr><th>Bereich</th><th>Belichtung</th></tr>
+<tr><td>Key (Gesicht, Lichtseite)</td><td>korrekte Belichtung</td></tr>
+<tr><td>Fill (Schattenseite)</td><td>2–3 Blendenstufen darunter</td></tr>
+<tr><td>Hintergrund</td><td>1,5–3,5 Blendenstufen darunter</td></tr>
+</table>
+<p>Der Hintergrund „schmilzt“ dabei idealerweise stufenweise ins Dunkle (1, 2, 3 Stufen unter Key), statt flach gleich hell zu sein. Mehr dazu in der nächsten Lektion.</p>
+
+<h3>6. Eye Light</h3>
+<p>Ein kleines Licht nahe der Kameraachse erzeugt einen Glanzpunkt in den Augen – das Gesicht wirkt lebendiger, ohne die Lichtstimmung zu verändern.</p>
+
+<h3>Die Breakdown-Methode</h3>
+<ol>
+<li>Standbild aus einem Commercial/Film nehmen.</li>
+<li><strong>Schatten lesen:</strong> Wie weich ist die Kante? → Größe der Quelle.</li>
+<li><strong>Glanzpunkte in den Augen</strong> lesen: Form und Position verraten Lichtquellen.</li>
+<li>Wo ist die Kante (Backlight)? Wie dunkel ist die Schattenseite (Negative Fill)?</li>
+<li>Lichtplan skizzieren – dann selbst nachbauen.</li>
+</ol>
+<div class="box tip"><h4>Verbindung zum Grading</h4>Als ehemaliger Colorist betont er: Der Look entsteht am Set. Ein gut gesetztes Kontrastverhältnis lässt sich im Grading verfeinern – flaches Licht nicht wirklich retten.</div>
+`,
+        aufgabe: "Breakdown + Nachbau: Wähle ein Werbe-Standbild mit Person. Bestimme Key, Fill, Backlight und Negative Fill und skizziere den Lichtplan. Baue es danach mit Fenster, Bettlaken als Diffusion und schwarzem Stoff als Negative Fill nach. Vergleiche Original und Nachbau nebeneinander.",
+        quiz: [
+          { frage: "Was ist Negative Fill?", antworten: ["Ein dunkler ND-Filter", "Schwarze Flächen, die Streulicht schlucken und Kontrast erzeugen", "Ein Lichtmodus der Kamera", "Ein Fill Light mit wenig Leistung"], richtig: 1, erklaerung: "Negative Fill nimmt Licht weg und gibt dem Gesicht wieder Form." },
+          { frage: "Wie nutzt man direkte Sonne bei Außenaufnahmen typischerweise im Commercial-Stil?", antworten: ["Direkt von vorne als Key", "Als Backlight/Kante, Key kommt von einer weichen Quelle", "Gar nicht", "Nur zur Mittagszeit"], richtig: 1, erklaerung: "Person drehen, Sonne von hinten – vorne großer Bounce oder Diffusion." },
+          { frage: "Fill 2 Blendenstufen unter dem Key entspricht welchem Lichtverhältnis?", antworten: ["2:1", "4:1", "8:1", "1:2"], richtig: 1, erklaerung: "Jede Blendenstufe verdoppelt: 2² = 4 → 4:1." }
+        ],
+        quellen: [
+          { titel: "The Wandering DP (YouTube-Kanal)", url: "https://youtube.com/@wanderingdp" },
+          { titel: "Wandering DP – Location Lighting: Embracing What You Can't Control", url: "https://wanderingdp.com/tutorials/location-lighting/" },
+          { titel: "Wandering DP Podcast #45 – Daylight Exteriors", url: "https://wanderingdp.com/podcast/the-wandering-dp-podcast-episode-45-daylight-exteriors/" },
+          { titel: "Wandering DP Podcast #81 – Lighting from Windows", url: "http://wanderingdp.com/podcast/wandering-dp-podcast-episode-81-lighting-windows/" },
+          { titel: "Wandering DP Podcast #67 – Lighting Cheap", url: "https://wanderingdp.com/podcast/wandering-dp-podcast-episode-67-lighting-cheap/" },
+          { titel: "Wandering DP Podcast #64 – Eye Lights", url: "http://wanderingdp.com/podcast/wandering-dp-podcast-eye-lights/" },
+          { titel: "Wandering DP Podcast #397 – Same but Different (Bounce + Negative Fill)", url: "https://wanderingdp.com/podcast/the-wandering-dp-podcast-episode-397-same-but-different/" },
+          { titel: "PremiumBeat – How to Light a Commercial the Patrick O'Sullivan Way", url: "https://www.premiumbeat.com/blog/how-to-light-a-commercial-the-patrick-osullivan-way/" }
+        ]
+      },
+      {
+        id: "false-color",
+        titel: "Belichten mit False Color & Lichtverhältnissen",
+        level: "vertiefung",
+        mentor: ["wanderingdp"],
+        inhalt: `
+<p>Für The Wandering DP ist <strong>False Color sein wichtigstes Belichtungswerkzeug</strong>. Seine Begründung: Monitore am Set sind oft falsch kalibriert, und müde Augen gewöhnen sich an Helligkeit – man belichtet dann über oder unter, ohne es zu merken.</p>
+
+<h3>Was ist False Color?</h3>
+<p>Eine Monitor-/Kamerafunktion, die Helligkeitsbereiche in Signalfarben einfärbt (z. B. Lila/Blau = fast schwarz, Grün = mittleres Grau, Rosa = Hautton-Bereich, Gelb/Rot = kurz vor dem Ausbrennen). Du siehst sofort, welcher Bereich wie hell ist – unabhängig vom Display.</p>
+<div class="box"><h4>Achtung</h4>Jede Kamera und jeder Monitor hat eine eigene Farbtabelle. Lerne die Legende <em>deines</em> Geräts. Viele Handy-Apps (z. B. Blackmagic Camera) und spiegellose Kameras haben False Color oder zumindest Zebras.</div>
+
+<h3>Zielwerte (Orientierung, keine Gesetze)</h3>
+<table>
+<tr><th>Motiv</th><th>Ungefährer Bereich (IRE / %)</th></tr>
+<tr><td>Hauttöne</td><td>ca. 40–75 – abhängig von Hauttyp und gewünschter Stimmung</td></tr>
+<tr><td>Mittleres Grau</td><td>ca. 40–45 (in Rec.709)</td></tr>
+<tr><td>Weiße Flächen mit Zeichnung</td><td>bis ca. 90–95</td></tr>
+<tr><td>Ausgebrannt (Clipping)</td><td>100 – vermeiden, außer bei Lichtquellen</td></tr>
+</table>
+<p>Die Quellen nennen verschiedene Ziele für Haut – genau deshalb lohnt es sich, eine eigene, konsistente Methode zu entwickeln.</p>
+
+<h3>Lichtverhältnisse in Blendenstufen</h3>
+<p>Eine Blendenstufe = doppelte bzw. halbe Lichtmenge. Daher:</p>
+<table>
+<tr><th>Fill unter Key</th><th>Verhältnis</th><th>Wirkung</th></tr>
+<tr><td>1 Stufe</td><td>2:1</td><td>weich, freundlich</td></tr>
+<tr><td>1,5 Stufen</td><td>ca. 3:1</td><td>klassischer Commercial-Standard</td></tr>
+<tr><td>2 Stufen</td><td>4:1</td><td>modelliert, filmisch</td></tr>
+<tr><td>3 Stufen</td><td>8:1</td><td>dramatisch, Low Key</td></tr>
+</table>
+<p>Formel: <code>Verhältnis = 2^Stufen</code>.</p>
+
+<h3>Workflow nach dem Wandering-DP-Prinzip</h3>
+<ol>
+<li><strong>Key auf die Haut belichten</strong> (False Color: Hauttonbereich).</li>
+<li>Schattenseite prüfen: Wie viele Stufen darunter? Mit Fill/Negative Fill einstellen.</li>
+<li>Hintergrund prüfen: stufenweise abfallen lassen.</li>
+<li>Highlights prüfen: Nichts Wichtiges darf clippen.</li>
+<li>Mit einer festen <strong>Monitor-LUT</strong> arbeiten (z. B. Log → Rec.709), damit das, was du siehst, dem späteren Grading-Ausgangspunkt entspricht.</li>
+</ol>
+<div class="box tip"><h4>Im Grading-Labor üben</h4>Die Waveform im <a href="#/labor">Grading-Labor</a> zeigt dieselben Werte (0–100), die False Color einfärbt. Lade ein Porträt und prüfe: Wo liegt die Haut? Wie viele „Stufen“ liegen zwischen Licht- und Schattenseite?</div>
+`,
+        aufgabe: "Filme ein Porträt dreimal mit Fill 1, 2 und 3 Stufen unter Key (mit Handy-App mit False Color/Zebras oder Waveform). Prüfe die Werte danach im Grading-Labor und notiere, welches Verhältnis dir am besten gefällt.",
+        quiz: [
+          { frage: "Warum vertraut The Wandering DP False Color mehr als dem Monitorbild?", antworten: ["Weil es schöner aussieht", "Weil Monitore falsch kalibriert sein können und Augen sich anpassen", "Weil es Pflicht ist", "Weil es Rauschen entfernt"], richtig: 1, erklaerung: "False Color misst – das Auge schätzt." },
+          { frage: "Fill 3 Blendenstufen unter Key entspricht …", antworten: ["3:1", "6:1", "8:1", "9:1"], richtig: 2, erklaerung: "2³ = 8 → 8:1." },
+          { frage: "Gilt eine False-Color-Farbtabelle für alle Kameras?", antworten: ["Ja", "Nein, jedes Gerät hat eine eigene Legende"], richtig: 1, erklaerung: "Immer die Legende des eigenen Geräts lernen." }
+        ],
+        quellen: [
+          { titel: "Wandering DP – Exposure & LUT Methodology (Arri Alexa Workflows)", url: "https://wanderingdp.com/cinematography/lut-workflow-arri-alexa/" },
+          { titel: "Wandering DP – Lighting Ratios in Cinematography", url: "https://wanderingdp.com/cinematography/cinematography-school-lighting-ratios-101/" },
+          { titel: "Wandering DP – Kurs „Mastering Exposure“", url: "https://wanderingdp.teachable.com/p/mastering-exposure" },
+          { titel: "StudioBinder – How to Use False Color", url: "https://www.studiobinder.com/blog/how-to-use-false-color-exposure/" },
+          { titel: "Videomaker – How to use false color", url: "https://www.videomaker.com/how-to/shooting/composition/how-to-use-false-color-in-your-next-project/" },
+          { titel: "Wikipedia – Lighting ratio", url: "https://en.wikipedia.org/wiki/Lighting_ratio" }
         ]
       },
       {
@@ -221,6 +355,7 @@ window.KURSE = [
 </ul>
 <h3>Lautheit für Social Media</h3>
 <p>Plattformen normalisieren die Lautstärke. Ein gängiger Zielwert für Social/Streaming liegt bei etwa <strong>−14 LUFS</strong> integriert, mit True Peak unter −1 dBTP. Musik unter Sprache etwa 15–20 dB leiser mischen („Ducking“).</p>
+<p>Wie Sounddesign Edits lebendig macht (Whooshes, Hits, übertriebene Real-Sounds), zeigt die Lektion <a href="#/lektion/edits/sounddesign-edits">Sounddesign für Edits</a> nach Paddy Cartwright.</p>
 `,
         aufgabe: "Nimm denselben Satz einmal mit dem Kamera-/Handy-Mikro aus 2 m und einmal mit dem Handy nah am Mund (als Rekorder) auf. Vergleiche.",
         quiz: [
@@ -436,6 +571,7 @@ window.KURSE = [
           { titel: "ACES Central – Academy Color Encoding System", url: "https://acescentral.com/" },
           { titel: "Wikipedia – Rec. 709", url: "https://en.wikipedia.org/wiki/Rec._709" },
           { titel: "Cullen Kelly (YouTube) – Farbmanagement & Look Development", url: "https://www.youtube.com/@CullenKelly" },
+          { titel: "Wandering DP – Exposure & LUT Methodology", url: "https://wanderingdp.com/cinematography/lut-workflow-arri-alexa/" },
           { titel: "Netflix Partner Help Center – Color Managed Workflow", url: "https://partnerhelp.netflixstudios.com/" }
         ]
       },
@@ -682,6 +818,7 @@ window.KURSE = [
 <li><strong>Zoom Transition:</strong> Reinzoomen auf den Beat.</li>
 <li>Faustregel: <em>In-Camera-Übergänge</em> (beim Drehen geplant) wirken hochwertiger als App-Effekte.</li>
 </ul>
+<p>Diesen Stil auf die Spitze getrieben: <a href="#/lektion/edits/kinetic-editing">Kinetic Editing nach Paddy Cartwright</a>.</p>
 `,
         aufgabe: "Wähle einen Song mit klarem Drop. Schneide ein 15-Sekunden-Reel, in dem vor dem Drop lange Clips laufen und ab dem Drop auf jeden zweiten Beat geschnitten wird.",
         quiz: [
@@ -691,6 +828,115 @@ window.KURSE = [
         quellen: [
           { titel: "CapCut – Ressourcen (Beat, Speed, Transitions)", url: "https://www.capcut.com/resource" },
           { titel: "Wikipedia – Tempo (Musik) / BPM", url: "https://de.wikipedia.org/wiki/Tempo_(Musik)" }
+        ]
+      },
+      {
+        id: "kinetic-editing",
+        titel: "Kinetic Editing (Paddy Cartwright)",
+        level: "vertiefung",
+        mentor: ["paddycartwright"],
+        inhalt: `
+<p><strong>Paddy Cartwright</strong> ist Kameramann und Regisseur aus London, spezialisiert auf <strong>Sport- und Musikbilder</strong> (u. a. Formel 1, Nike, Motorrad). In seiner YouTube-Serie <em>Kinetic Editing</em> geht er eigene Edits Schritt für Schritt durch – genau der Stil, der auf Instagram funktioniert.</p>
+
+<h3>Was ist Kinetic Editing?</h3>
+<ul>
+<li><strong>Kinetic Edit:</strong> Oberbegriff für schnelle Schnitte mit viel Bewegung, Effekten, Speed Ramps und Übergängen – Energie steht im Vordergrund.</li>
+<li><strong>Flow Edit:</strong> ein Unterstil, bei dem vor allem <em>Bewegungen zwischen Clips gematcht</em> werden (Bewegung in Clip A geht nahtlos in Clip B weiter).</li>
+</ul>
+
+<h3>Bausteine eines Kinetic Edits</h3>
+<ol>
+<li><strong>Bewegung schon beim Drehen:</strong> Kamera bewegt sich (Handheld, Whip Pans, nah am Motiv), damit der Schnitt Material zum „Weiterreichen“ hat.</li>
+<li><strong>Schnitt auf Bewegung + Beat:</strong> Schnitte dort, wo Bewegung und Musikakzent zusammenfallen.</li>
+<li><strong>Speed Ramps:</strong> Tempo innerhalb eines Clips variieren (schnell → langsam auf den Höhepunkt → schnell).</li>
+<li><strong>Bewegungsrichtung matchen:</strong> fährt das Auto in Clip A nach rechts aus dem Bild, kommt in Clip B etwas von links rein.</li>
+<li><strong>Sounddesign</strong> als Klebstoff (eigene Lektion: <a href="#/lektion/edits/sounddesign-edits">Sounddesign für Edits</a>).</li>
+<li><strong>Kontrast im Tempo:</strong> Ruhige Momente machen schnelle erst wirksam.</li>
+</ol>
+
+<h3>Rezept: Der F1-Slow-Shutter-Look</h3>
+<p>Für seine Formel-1-Bilder teilt Paddy diese Technik:</p>
+<ol>
+<li><strong>Weitwinkel</strong>-Objektiv.</li>
+<li><strong>Sehr nah am Boden</strong> filmen, wenn das Fahrzeug durch eine Kurve fährt.</li>
+<li><strong>Lange Verschlusszeit: 1/8 bis 1/4 s</strong> – starke Bewegungsunschärfe.</li>
+<li>In der Post <strong>beschleunigen</strong>.</li>
+</ol>
+<p>Das ist ein bewusster Bruch der <a href="#/lektion/film/kamera">180°-Regel</a>: Regeln kennen, um sie gezielt zu brechen. Das funktioniert mit allem, was sich schnell bewegt – Fahrrad, Skateboard, Läufer, Auto auf der Straße. Draußen brauchst du dafür meist einen starken ND-Filter.</p>
+
+<h3>Die Serie (Videos in deiner Bibliothek)</h3>
+<ul>
+<li>Ep. 1 – ein Formel-1-Edit</li>
+<li>Ep. 2 – Nike-Commercial</li>
+<li>Ep. 3 – Lauf-Videos</li>
+<li>Ep. 4 – High-Pace-Motorradvideo</li>
+</ul>
+<p>Schau sie mit dieser Checkliste: <em>Wo wird geschnitten? Was passiert im Bild beim Schnitt? Was passiert im Ton? Wo wird es langsam?</em></p>
+
+<h3>Passion Projects</h3>
+<p>Im Podcast „Beyond The Cut“ erzählt er, wie <strong>eigene Herzensprojekte</strong> ihm den Job bei der Formel 1 eingebracht haben. Seine Botschaft: nicht auf Aufträge warten, sondern zeigen, was man filmen <em>will</em>. Dazu passt sein Video „Go film something in 45 minutes“ – kurze, selbst gestellte Challenges.</p>
+`,
+        aufgabe: "45-Minuten-Challenge (inspiriert von Paddy): Geh raus und filme in 45 Minuten etwas Bewegtes (Fahrrad, Hund, Freund beim Laufen). Mindestens ein Shot mit langer Verschlusszeit + Speed-Up, mindestens zwei gematchte Bewegungsrichtungen. Schneide daraus in Edits/CapCut ein 15-Sekunden-Kinetic-Reel.",
+        quiz: [
+          { frage: "Was unterscheidet einen Flow Edit vom allgemeinen Kinetic Edit?", antworten: ["Er ist langsamer", "Er matcht vor allem Bewegungen zwischen Clips", "Er hat keine Musik", "Er ist schwarzweiß"], richtig: 1, erklaerung: "Flow Edits leben von nahtlos weitergeführter Bewegung." },
+          { frage: "Welche Verschlusszeit nutzt Paddy für den F1-Slow-Shutter-Look?", antworten: ["1/1000 s", "1/50 s", "1/8–1/4 s", "1/2000 s"], richtig: 2, erklaerung: "Lange Belichtung erzeugt starke Unschärfe, danach wird beschleunigt." },
+          { frage: "Was braucht man draußen bei Tag für 1/8 s Verschlusszeit meistens?", antworten: ["Mehr ISO", "Einen starken ND-Filter", "Ein Teleobjektiv", "Einen Blitz"], richtig: 1, erklaerung: "Sonst wird das Bild bei so langer Belichtung viel zu hell." }
+        ],
+        quellen: [
+          { titel: "Paddy Cartwright (YouTube-Kanal)", url: "https://youtube.com/@paddy.cartwright" },
+          { titel: "Kinetic Editing – Episode 1 (F1)", url: "https://www.youtube.com/watch?v=TaOYRspaWSE" },
+          { titel: "Kinetic Editing – Episode 2 (Nike Commercial)", url: "https://www.youtube.com/watch?v=C-TDLX2Anf8" },
+          { titel: "Kinetic Editing – Ep. 3 (Running)", url: "https://www.youtube.com/watch?v=Mt9aWG3iJio" },
+          { titel: "Kinetic Editing – Ep. 4 (Motorrad)", url: "https://www.youtube.com/watch?v=WtIswR89LPk" },
+          { titel: "Paddy Cartwright – TikTok (F1-Slow-Shutter-Rezept)", url: "https://www.tiktok.com/@paddycartwright" },
+          { titel: "Paddy Cartwright – Vimeo (Showreel)", url: "https://vimeo.com/user130060392" }
+        ]
+      },
+      {
+        id: "sounddesign-edits",
+        titel: "Sounddesign für Edits (Paddy Cartwright)",
+        level: "praxis",
+        mentor: ["paddycartwright"],
+        inhalt: `
+<p>Ein wiederkehrendes Thema bei Paddy Cartwright: <strong>Sounddesign verändert, wie sich ein Film anfühlt</strong> – oft mehr als das Bild. Im Podcast „Beyond The Cut“ spricht er darüber, wie er über Jahre eine große eigene Soundbibliothek aufgebaut hat.</p>
+
+<h3>Seine Prinzipien</h3>
+<ul>
+<li><strong>Eigene Soundbibliothek aufbauen:</strong> Geräusche sammeln, benennen, sortieren. Mit jedem Projekt wächst sie – und dein Stil wird wiedererkennbar.</li>
+<li><strong>Echte Geräusche übertreiben:</strong> Ein Motor, Schritte, ein Schuh auf Asphalt – lauter, näher, „größer“ als in Wirklichkeit. Das erzeugt eine stärkere emotionale Reaktion.</li>
+<li><strong>Schnitt ist wie Komposition:</strong> Rhythmus, Spannung und Auflösung funktionieren im Edit wie in der Musik.</li>
+</ul>
+
+<h3>Die Sound-Ebenen in einem Kinetic Edit</h3>
+<table>
+<tr><th>Ebene</th><th>Beispiel</th><th>Funktion</th></tr>
+<tr><td>Musik</td><td>Track mit klarem Drop</td><td>Grundrhythmus & Emotion</td></tr>
+<tr><td>Whooshes / Swishes</td><td>bei Whip Pans, schnellen Bewegungen</td><td>Übergänge „verkaufen“</td></tr>
+<tr><td>Impacts / Hits</td><td>auf harten Schnitten, Beat-Drops</td><td>Wucht</td></tr>
+<tr><td>Risers</td><td>vor dem Drop</td><td>Spannung aufbauen</td></tr>
+<tr><td>Foley / Real-Sounds</td><td>Motor, Schritte, Atmen, Kleidung</td><td>Nähe, Realität – übertrieben!</td></tr>
+<tr><td>Stille</td><td>kurz vor dem Höhepunkt</td><td>Kontrast – der stärkste Effekt überhaupt</td></tr>
+</table>
+
+<h3>Praxis in Edits / CapCut</h3>
+<ol>
+<li>Erst Bildschnitt grob auf die Musik.</li>
+<li>Dann jede Bewegung „vertonen“: Whoosh vor Whip Pan, Hit auf Schnitt.</li>
+<li>Real-Sounds aus deinem Originalclip nicht stummschalten – lauter machen und unter die Musik legen.</li>
+<li>Musik bei wichtigen Sounds kurz absenken (Ducking).</li>
+<li>Auf dem Handy-Lautsprecher <em>und</em> mit Kopfhörern prüfen.</li>
+</ol>
+<div class="box tip"><h4>Soundbibliothek starten</h4>Lege einen Ordner „SFX“ an, mit Unterordnern: Whoosh, Hit, Riser, Foley, Atmo. Nimm mit dem Handy eigene Geräusche auf (Tür, Schlüssel, Schritte, Motoren) – lizenzfrei und einzigartig. Ergänzend: die Soundeffekt-Bibliotheken in Edits und CapCut.</div>
+`,
+        aufgabe: "Nimm dein Kinetic-Reel aus der vorherigen Lektion. Schalte die Musik stumm und vertone es nur mit Sounds (mind. 5 Whooshes/Hits, eigene Foley-Aufnahmen). Dann Musik wieder dazu. Vergleiche mit der Version ohne Sounddesign.",
+        quiz: [
+          { frage: "Warum echte Geräusche übertreiben?", antworten: ["Damit die Datei größer wird", "Für eine stärkere emotionale Reaktion", "Weil Instagram es verlangt", "Damit man keine Musik braucht"], richtig: 1, erklaerung: "Übertriebene Real-Sounds machen Bilder körperlich spürbar." },
+          { frage: "Wofür nutzt man einen Riser?", antworten: ["Spannung vor einem Höhepunkt aufbauen", "Rauschen entfernen", "Lautstärke normalisieren", "Bildstabilisierung"], richtig: 0, erklaerung: "Ein ansteigender Sound kündigt den Drop an." }
+        ],
+        quellen: [
+          { titel: "Beyond The Cut – How Passion Projects Got Him A Gig With F1 (YouTube)", url: "https://www.youtube.com/watch?v=jQKzG8BYwRg" },
+          { titel: "Beyond The Cut – Podcast-Folge (Spotify)", url: "https://open.spotify.com/episode/1rg25DX8r5bjDDPLuMXz98" },
+          { titel: "Paddy Cartwright (YouTube-Kanal)", url: "https://youtube.com/@paddy.cartwright" }
         ]
       },
       {
@@ -818,16 +1064,20 @@ window.GLOSSAR = [
   ["Gamma", "Mitteltöne im Grading; allgemein: die Helligkeitskurve eines Signals."],
   ["Grain", "Filmkorn – körnige Struktur analoger Filme, digital oft nachgeahmt."],
   ["Halation", "Rötlicher Lichtschimmer um helle Bereiche, typisch für analogen Film."],
+  ["False Color", "Monitorfunktion, die Helligkeitsbereiche in Signalfarben einfärbt – Belichtung messen statt schätzen."],
+  ["Flow Edit", "Edit-Stil, der Bewegungen zwischen Clips nahtlos weiterführt (Unterform des Kinetic Edits)."],
   ["Hook", "Der Aufmerksamkeitsfänger in den ersten Sekunden eines Social-Videos."],
   ["J-Cut / L-Cut", "Ton beginnt vor dem Bild (J) bzw. läuft nach dem Bildschnitt weiter (L)."],
   ["Keyframe", "Gespeicherter Wert zu einem Zeitpunkt, zwischen Keyframes wird animiert."],
   ["Kelvin (K)", "Einheit der Farbtemperatur. Niedrig = warm/orange, hoch = kalt/blau."],
   ["Lift", "Rad/Regler für die Schatten bzw. den Schwarzwert."],
   ["Log", "Flache Aufnahmekurve mit großem Dynamikumfang, muss nachträglich transformiert werden."],
+  ["Kinetic Edit", "Schneller Edit-Stil mit viel Bewegung, Speed Ramps, Übergängen und Sounddesign."],
   ["LUFS", "Maßeinheit für wahrgenommene Lautheit. Social/Streaming oft ca. −14 LUFS."],
   ["LUT", "Look-Up Table – Tabelle, die Eingangs- in Ausgangsfarben umrechnet."],
   ["Match Cut", "Schnitt, der zwei Bilder über Form, Bewegung oder Inhalt verbindet."],
   ["ND-Filter", "Neutraldichtefilter – dunkelt das Bild ohne Farbveränderung ab."],
+  ["Negative Fill", "Schwarze Flächen auf der Schattenseite, die Streulicht schlucken und Kontrast erzeugen."],
   ["Node", "Bearbeitungsbaustein in DaVinci Resolve; Nodes werden zu einem Baum verbunden."],
   ["Offset", "Verschiebt alle Helligkeits-/Farbwerte gleichmäßig."],
   ["Power Window", "Form-Maske in DaVinci Resolve für lokale Korrekturen."],
@@ -839,9 +1089,31 @@ window.GLOSSAR = [
   ["Shot Matching", "Angleichen der Farben mehrerer Einstellungen einer Szene."],
   ["Skin Tone Line", "Linie im Vectorscope, auf der natürliche Hauttöne liegen."],
   ["Speed Ramp", "Fließende Geschwindigkeitsänderung innerhalb eines Clips."],
+  ["Soundbibliothek", "Eigene, sortierte Sammlung von Geräuschen und Effekten (Whoosh, Hit, Riser, Foley …)."],
   ["Teal & Orange", "Komplementärer Look: warme Hauttöne vor kühlem Hintergrund."],
+  ["Ultra Bounce", "Weißer Reflexstoff in großen Rahmen (z. B. 12×12 Fuß) – wird angeleuchtet und dient als weicher Key."],
   ["Vectorscope", "Scope, das Farbton (Winkel) und Sättigung (Abstand zur Mitte) zeigt."],
   ["Waveform", "Scope, das die Helligkeit über die Bildbreite darstellt."],
   ["Weißabgleich", "Einstellung, die festlegt, welche Farbe als neutrales Weiß gilt."],
   ["Whip Pan", "Sehr schneller Kameraschwenk, oft als Übergang genutzt."]
+];
+
+/* Creator / Mentoren, an deren Videos sich die Inhalte orientieren. */
+window.CREATORS = [
+  {
+    id: "wanderingdp",
+    name: "The Wandering DP",
+    person: "Patrick O'Sullivan",
+    url: "https://youtube.com/@wanderingdp",
+    fokus: "Commercial-Kameramann (früher Colorist). Licht-Breakdowns aus Werbefilmen: weiche Großquellen, Negative Fill, Belichtung mit False Color und Lichtverhältnissen.",
+    lektionen: ["film/licht-commercial", "film/false-color", "film/licht"]
+  },
+  {
+    id: "paddycartwright",
+    name: "Paddy Cartwright",
+    person: "Paddy Cartwright",
+    url: "https://youtube.com/@paddy.cartwright",
+    fokus: "Kameramann & Regisseur aus London, Sport- und Musikbilder (F1, Nike, Motorrad). Kinetic Editing, Speed Ramps, Sounddesign und Passion Projects.",
+    lektionen: ["edits/kinetic-editing", "edits/sounddesign-edits", "edits/beat-sync"]
+  }
 ];

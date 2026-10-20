@@ -83,9 +83,23 @@
   }
 
   /* ---------------- Helfer ---------------- */
+  const CREATORS = window.CREATORS || [];
   const findKurs = id => KURSE.find(k => k.id === id);
   const findLektion = (k, l) => findKurs(k)?.lektionen.find(x => x.id === l);
   const levelTag = lv => `<span class="tag ${lv}">${{ basis: "Basis", vertiefung: "Vertiefung", praxis: "Praxis" }[lv] || lv}</span>`;
+
+  function creatorCard(c) {
+    const links = c.lektionen.map(ref => {
+      const [k, l] = ref.split("/"); const lek = findLektion(k, l);
+      return lek ? `<li><a href="#/lektion/${k}/${l}">${esc(lek.titel)}</a></li>` : "";
+    }).join("");
+    return `<div class="card mentor">
+      <h3>${esc(c.name)}</h3>
+      <p>${esc(c.fokus)}</p>
+      <ul>${links}</ul>
+      <a class="btn small" href="${esc(c.url)}" target="_blank" rel="noopener">▶ YouTube-Kanal</a>
+    </div>`;
+  }
 
   /* ---------------- Seiten ---------------- */
   function home() {
@@ -112,6 +126,11 @@
           </a>`; }).join("")}
       </div>
 
+      ${CREATORS.length ? `
+      <h2>Deine Mentoren</h2>
+      <p class="muted">An den Videos dieser Creator orientieren sich die Lektionen.</p>
+      <div class="grid">${CREATORS.map(creatorCard).join("")}</div>` : ""}
+
       <h2>Werkzeuge</h2>
       <div class="grid">
         <a class="card" href="#/labor"><div class="icon">🎛️</div><h3>Grading-Labor</h3><p>Eigenes Bild oder Video laden, Lift/Gamma/Gain bewegen und live Waveform, Parade & Vectorscope lesen.</p></a>
@@ -124,8 +143,8 @@
         <li><strong>Woche 1–2:</strong> Filmstudium-Basics (Einstellungsgrößen, Kamera, Licht) – jede Übung praktisch umsetzen.</li>
         <li><strong>Woche 3:</strong> Color Grading Basis (Korrektur vs. Grading, Scopes, Primaries) + Grading-Labor.</li>
         <li><strong>Woche 4:</strong> Instagram Edits: Setup, Hook, Beat-Sync – erstes Reel veröffentlichen.</li>
-        <li><strong>Woche 5–6:</strong> Vertiefung: Schnitttheorie, Log/LUTs, Secondaries, Looks.</li>
-        <li><strong>Danach:</strong> Effekte, Export, eigene Looks – und jede Woche ein Reel als Übung.</li>
+        <li><strong>Woche 5–6:</strong> Vertiefung: Commercial-Licht & False Color (Wandering DP), Schnitttheorie, Log/LUTs, Secondaries, Looks.</li>
+        <li><strong>Danach:</strong> Kinetic Editing & Sounddesign (Paddy Cartwright), Effekte, Export, eigene Looks – und jede Woche ein Reel als Übung.</li>
       </ol>`;
   }
 
@@ -164,6 +183,9 @@
         <div class="breadcrumb"><a href="#/">Start</a> / <a href="#/kurs/${k.id}">${esc(k.titel)}</a> / Lektion ${idx + 1}</div>
         ${levelTag(l.level)}
         <h1>${esc(l.titel)}</h1>
+        ${(l.mentor || []).map(id => CREATORS.find(c => c.id === id)).filter(Boolean).map(c => `
+          <div class="box mentor-box"><h4>Orientiert an</h4><strong>${esc(c.name)}</strong> – ${esc(c.fokus)}
+          <a href="${esc(c.url)}" target="_blank" rel="noopener">Zum Kanal →</a></div>`).join("")}
         ${l.inhalt}
 
         ${l.aufgabe ? `<div class="box task"><h4>Praxis-Übung</h4>${esc(l.aufgabe)}</div>` : ""}
@@ -243,6 +265,8 @@
         <label style="display:flex;gap:8px;align-items:center;color:var(--text)"><input type="checkbox" name="hochkant"> Hochformat (9:16)</label>
         <div><button class="btn primary">Video hinzufügen</button></div>
       </form>
+
+      ${CREATORS.length ? `<h2>Kanäle</h2><div class="grid">${CREATORS.map(creatorCard).join("")}</div>` : ""}
 
       <h2>Bibliothek (${vids.length})</h2>
       ${vids.length ? `<div class="grid">${vids.map(v => videoCard(v, { showLesson: true, editable: true })).join("")}</div>`

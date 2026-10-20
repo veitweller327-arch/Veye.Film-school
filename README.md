@@ -11,9 +11,9 @@ Reines HTML/CSS/JavaScript – kein Build, kein Server nötig.
 
 | Kurs | Lektionen |
 |---|---|
-| 🎬 Filmstudium – Grundlagen | Einstellungsgrößen & Bildsprache · Kameratechnik · Licht · Montage & Schnitttheorie · Ton · Dramaturgie |
+| 🎬 Filmstudium – Grundlagen | Einstellungsgrößen & Bildsprache · Kameratechnik · Licht · Commercial-Licht (Wandering DP) · False Color (Wandering DP) · Montage & Schnitttheorie · Ton · Dramaturgie |
 | 🎨 Color Grading | Korrektur vs. Grading · Scopes · Lift/Gamma/Gain · Log, LUTs & Farbräume · Secondaries · Looks · Grading am Handy |
-| 📱 Instagram Edits & Reels | Edits-App & Setup/Safe Zones · Hook · Beat-Sync · Text & Untertitel · Green Screen & Keyframes · Export |
+| 📱 Instagram Edits & Reels | Edits-App & Setup/Safe Zones · Hook · Beat-Sync · Kinetic Editing (Paddy Cartwright) · Sounddesign (Paddy Cartwright) · Text & Untertitel · Green Screen & Keyframes · Export |
 
 Jede Lektion hat Theorie, eine Praxis-Übung, ein Quiz und verlinkte Quellen.
 
