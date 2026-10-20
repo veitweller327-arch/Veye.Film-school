@@ -295,6 +295,7 @@
           ${l.quiz?.length ? quizHtml(l.quiz) : ""}`;
         bindQuiz(l.quiz || []);
         enhanceTables(root);
+        if (window.Terms) window.Terms.annotate(root);
       } else if (mode === "tutor") {
         window.Tutor.tutorMode(root, k, l, vids);
       } else {

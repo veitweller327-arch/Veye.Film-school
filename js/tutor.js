@@ -155,6 +155,7 @@
         </div>`;
 
       if (window.enhanceTables) window.enhanceTables(root);
+      if (window.Terms) window.Terms.annotate(root.querySelector(".step-card"));
       root.querySelector("#stepPrev").onclick = () => { state.pos--; save(); render(); scrollTop(); };
       const next = root.querySelector("#stepNext");
       if (next) next.onclick = () => { state.pos++; save(); render(); scrollTop(); };
@@ -310,6 +311,7 @@ ${vids ? `\nVIDEOS ZU DIESER LEKTION (kannst du empfehlen):\n${vids}` : ""}`;
         b.onclick = () => ask("Hallo! Bitte starte die Lektion mit dem ersten Teil.", true);
         log.lastChild.querySelector(".txt").appendChild(b);
       }
+      if (window.Terms) log.querySelectorAll(".msg.tutor .txt").forEach(el => window.Terms.annotate(el));
       log.scrollTop = log.scrollHeight;
     }
 

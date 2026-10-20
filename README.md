@@ -43,3 +43,7 @@ Alle Lektionen stehen in `data/kurse.js` – neue Lektion = neues Objekt im `lek
 ## Lern-Grafiken
 
 `data/grafiken.js` enthält 38 selbst gezeichnete, animierte SVG-Grafiken (Lichtaufbauten, Scopes, Farbkreise, Safe Zones …), die automatisch nach der passenden Abschnittsüberschrift in Lektionen, Schritt-Modus und Reels erscheinen. Fotos können zusätzlich pro Lektion über das Feld `bilder` (`{ abschnitt, src, alt, credit, lizenz, quelle }`) eingetragen werden.
+
+## Fachbegriffe mit Erklärung
+
+`data/begriffe.js` erweitert das Glossar (167 Begriffe) und definiert Schreibvarianten. `js/terms.js` markiert in Lektionen, Schritt-Modus, Reels und Tutor-Antworten jeden Fachbegriff beim ersten Vorkommen; beim Hovern, Fokussieren oder Antippen erscheint die Erklärung.

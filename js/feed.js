@@ -287,6 +287,7 @@
       </div>`;
     document.body.appendChild(wrap);
     document.documentElement.classList.add("reels-open");
+    if (window.Terms) wrap.querySelectorAll(".reel-body").forEach(b => window.Terms.annotate(b));
 
     const scroller = wrap.querySelector(".reels-scroll");
     const titleEl = wrap.querySelector(".reels-title");
@@ -306,7 +307,11 @@
       if (bar) bar.style.width = `${((i + 1) / cards.length) * 100}%`;
       segs.forEach((s, k) => { s.className = k < i ? "done" : k === i ? "now" : ""; });
       // Abschlusskarte mit aktuellem Quizstand neu aufbauen
-      if (c.type === "ende") sections[i].querySelector(".reel-body").innerHTML = bodyHtml(c, i, cards.length, ctx);
+      if (c.type === "ende") {
+        const body = sections[i].querySelector(".reel-body");
+        body.innerHTML = bodyHtml(c, i, cards.length, ctx);
+        if (window.Terms) window.Terms.annotate(body);
+      }
     }
 
     // Einblenden + sanftes Zurücktreten der Nachbarkarten
