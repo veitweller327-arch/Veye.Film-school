@@ -151,5 +151,13 @@
   window.addEventListener("resize", () => { if (current) hide(true); });
   window.addEventListener("hashchange", () => hide(true));
 
-  window.Terms = { annotate, count: () => defs.size };
+  // Begriffe eines HTML-Textes in Reihenfolge des Vorkommens (für Lernzettel)
+  function find(html) {
+    const d = document.createElement("div");
+    d.innerHTML = html;
+    annotate(d);
+    return [...d.querySelectorAll("dfn.gloss")].map(x => ({ t: x.dataset.term, d: defs.get(x.dataset.term) }));
+  }
+
+  window.Terms = { annotate, find, define: t => defs.get(t), count: () => defs.size };
 })();

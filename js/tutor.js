@@ -432,5 +432,11 @@ ${vids ? `\nVIDEOS ZU DIESER LEKTION (kannst du empfehlen):\n${vids}` : ""}`;
     } finally { btn.disabled = false; }
   }
 
-  window.Tutor = { aiReady, aiAvailable, stepMode, tutorMode, training, ask };
+  // Strukturierte Antwort (JSON) für andere Module, z. B. Lernzettel im Notizheft
+  function sampleJson(prompt, opts = {}) {
+    if (!aiAvailable() || !aiFn.json) return Promise.reject({ code: "not_granted" });
+    return aiFn.json(prompt, opts).catch(e => { aiErrorText(e); throw e; });
+  }
+
+  window.Tutor = { aiReady, aiAvailable, stepMode, tutorMode, training, ask, sampleJson, errorText: aiErrorText, htmlToText };
 })();

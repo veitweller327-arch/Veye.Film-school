@@ -986,3 +986,42 @@ html.notes-open .notes-tab { opacity: 0; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .notes-panel, .np-item, .sel-note, .notes-toast.in, .np-sec.flash { transition: none; animation: none; } }
 @media (max-width: 899px) { .topbar { gap: 8px; } }
 @media (max-width: 440px) { .logo span { display: none; } .notes-btn, .menu-btn { padding: 7px 9px; letter-spacing: .1em; } }
+
+/* ---------- Lernzettel im Notizheft ---------- */
+.np-sum { margin: 2px 0 16px; padding: 16px 16px 12px; border-radius: 12px; display: grid; gap: 14px;
+          background: linear-gradient(170deg, color-mix(in srgb, var(--c) 10%, #121214), #111113 60%);
+          border: 1px solid color-mix(in srgb, var(--c) 30%, transparent); animation: rise .45s var(--ease) both; }
+.np-sum.empty { grid-template-columns: 1fr auto; align-items: center; gap: 12px; background: var(--bg2); border-style: dashed; border-color: var(--line2); }
+.np-sum.empty p { margin: 4px 0 0; font-size: 13.5px; color: var(--muted); }
+.np-sum.loading p { margin: 0; font-size: 14px; }
+.np-sum-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.np-sum .label.acc { color: var(--c); }
+.np-kind { font: 500 10px var(--font-mono); letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+.np-fokus { margin: 0; font-size: 14px; color: #d8d3cc; padding: 10px 12px; border-radius: 8px; background: rgba(255,238,214,.04); font-style: italic; }
+.np-block { display: grid; gap: 8px; }
+.np-bl { font: 600 9.5px var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.np-kern { margin: 0; padding: 0; list-style: none; counter-reset: k; display: grid; gap: 8px; }
+.np-kern li { counter-increment: k; display: grid; grid-template-columns: 22px 1fr; gap: 8px; font-size: 14.5px; line-height: 1.5; color: #e4dfd8; }
+.np-kern li::before { content: counter(k, decimal-leading-zero); font: 600 10.5px/1.9 var(--font-mono); color: var(--c); }
+.np-werte, .np-begr { margin: 0; display: grid; gap: 0; border-top: 1px solid var(--line); }
+.np-werte > div, .np-begr > div { display: grid; grid-template-columns: minmax(90px, 40%) 1fr; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.np-werte dt { color: var(--muted); } .np-werte dd { margin: 0; font-weight: 600; color: var(--text); }
+.np-begr dt { font-weight: 650; color: var(--text); } .np-begr dd { margin: 0; color: #c9c4bd; }
+@media (max-width: 420px) { .np-werte > div, .np-begr > div { grid-template-columns: 1fr; gap: 2px; } }
+.np-merk { padding: 12px 14px; border-radius: 10px; border-left: 2px solid var(--c); background: rgba(255,238,214,.04); display: grid; gap: 4px; }
+.np-merk p { margin: 0; font-family: var(--font-display); font-size: 16px; font-weight: 600; line-height: 1.35; }
+.np-q { border: 1px solid var(--line); border-radius: 8px; background: rgba(0,0,0,.2); }
+.np-q + .np-q { margin-top: 6px; }
+.np-q summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 22px 1fr; gap: 8px; padding: 10px 12px; font-size: 14px; line-height: 1.45; }
+.np-q summary::-webkit-details-marker { display: none; }
+.np-q summary span { font: 600 10.5px/1.9 var(--font-mono); color: var(--c); }
+.np-q summary:hover { background: rgba(255,238,214,.03); }
+.np-q[open] summary { color: var(--text); }
+.np-q p { margin: 0; padding: 0 12px 12px 42px; font-size: 14px; color: var(--ok); line-height: 1.5; animation: rise .3s var(--ease) both; }
+.np-sum-actions { display: flex; justify-content: flex-end; gap: 14px; }
+.np-sum-actions button { background: none; border: 0; font: 500 11px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); cursor: pointer; padding: 2px 0; }
+.np-sum-actions button:hover { color: var(--text); }
+.np-sum-del[data-armed] { color: var(--bad); }
+.np-hint { margin: 16px 0 4px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line2); background: var(--bg2);
+           display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13.5px; color: var(--muted); }
+.np-hint p { margin: 0; } .np-hint b { color: var(--text); }

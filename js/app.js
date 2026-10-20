@@ -23,6 +23,8 @@
     const d = done(); const key = k + "/" + l;
     if (d[key]) delete d[key]; else d[key] = true;
     store.set("done", d);
+    // Beim Abschließen schreibt der Assistent den Lernzettel ins Notizheft
+    if (d[key] && window.Notes) window.Notes.ensureSummary(k, l);
   }
   function progress(kurs) {
     const n = kurs.lektionen.filter(l => isDone(kurs.id, l.id)).length;

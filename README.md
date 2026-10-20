@@ -51,3 +51,7 @@ Alle Lektionen stehen in `data/kurse.js` – neue Lektion = neues Objekt im `lek
 ## Notizheft
 
 `js/notes.js`: Seitenleiste (Desktop: Reiter am rechten Rand, Handy: „Notizen“ in der Kopfzeile). Markierter Text („＋ In Notizheft“) und in den Reels gemerkte Karten landen als Zitat unter der passenden Lektion; jede Lektion bekommt automatisch eine Überschrift und ein eigenes Notizfeld. Gespeichert wird im Browser; „Alles kopieren“ exportiert alles als Text.
+
+### Lernzettel
+
+Beim Abschließen einer Lektion legt der KI-Assistent einen Lernzettel ins Notizheft (Kernaussagen, wichtige Werte, Begriffe, Merksatz, Selbsttest-Fragen) und bezieht die eigenen Markierungen ein. Ohne KI wird der Lernzettel aus den Lektionsdaten erzeugt.

@@ -22,8 +22,9 @@
   let ctxKey = null;       // aktuelle Lektion (aus der Route)
   let isOpen = false;
 
-  const hasContent = n => n && ((n.items && n.items.length) || (n.text && n.text.trim()));
-  const entryCount = d => Object.values(d).reduce((a, n) => a + (n.items ? n.items.length : 0) + (n.text && n.text.trim() ? 1 : 0), 0);
+  const hasContent = n => n && ((n.items && n.items.length) || (n.text && n.text.trim()) || n.summary);
+  const entryCount = d => Object.values(d).reduce((a, n) => a + (n.items ? n.items.length : 0) + (n.text && n.text.trim() ? 1 : 0) + (n.summary ? 1 : 0), 0);
+  const isDone = key => { try { return !!(JSON.parse(localStorage.getItem("veye:done")) || {})[key]; } catch { return false; } };
 
   /* ---------------- Daten-API ---------------- */
   function add(kursId, lessonId, { text, quelle = "Markiert", ref = null }) {
@@ -102,6 +103,172 @@
     toastTimer = setTimeout(() => { toastEl.hidden = true; }, 3200);
   }
 
+  /* ---------------- Lernzettel ---------------- */
+  const pending = new Set();
+  const queue = [];
+  let running = false;
+
+  const plain = html => {
+    if (window.Tutor && window.Tutor.htmlToText) return window.Tutor.htmlToText(html);
+    const d = document.createElement("div"); d.innerHTML = html; return d.textContent.replace(/\s+/g, " ").trim();
+  };
+  const firstSentence = t => { const m = String(t).replace(/\s+/g, " ").trim().match(/^.{20,220}?[.!?](\s|$)/); return (m ? m[0] : String(t).slice(0, 200)).trim(); };
+  const clean = (v, max = 260) => String(v ?? "").replace(/\s+/g, " ").trim().slice(0, max);
+
+  // Ohne KI: Lernzettel direkt aus den Lektionsdaten
+  function autoSummary(key) {
+    const { lesson } = info[key];
+    const root = document.createElement("div");
+    root.innerHTML = lesson.inhalt;
+    const kern = [], werte = [];
+    let heading = null, tookForHeading = false;
+    for (const el of Array.from(root.children)) {
+      const tag = el.tagName;
+      if (tag === "H3") { heading = el.textContent.trim(); tookForHeading = false; continue; }
+      if (!tookForHeading && (tag === "P" || tag === "UL" || tag === "OL") && kern.length < 5) {
+        const t = tag === "P" ? firstSentence(el.textContent) : clean(el.querySelector("li")?.textContent, 200);
+        if (t.length > 25) { kern.push(heading ? `${heading.replace(/^\d+\.\s*/, "")}: ${t}` : t); tookForHeading = true; }
+      }
+      if (tag === "TABLE" && werte.length < 6) {
+        Array.from(el.querySelectorAll("tr")).filter(tr => tr.querySelector("td")).slice(0, 6 - werte.length).forEach(tr => {
+          const c = Array.from(tr.children).map(td => clean(td.textContent, 90));
+          werte.push({ k: c[0], v: c.slice(1).join(" · ") });
+        });
+      }
+    }
+    const tip = root.querySelector(".box.tip, .box");
+    const tipText = tip ? clean(Array.from(tip.childNodes).filter(n => n.nodeName !== "H4").map(n => n.textContent).join(" "), 600) : "";
+    const twoSentences = (tipText.match(/[^.!?]+[.!?]+/g) || [tipText]).slice(0, 2).join(" ").trim();
+    const merksatz = tipText ? clean(twoSentences, 280) : (kern[0] || "");
+    const seen = new Set();
+    const begriffe = (window.Terms ? window.Terms.find(lesson.inhalt) : []).filter(b => b.d && !seen.has(b.t) && seen.add(b.t)).slice(0, 6);
+    const fragen = (lesson.quiz || []).map(q => ({ q: q.frage, a: `${q.antworten[q.richtig]}${q.erklaerung ? " – " + q.erklaerung : ""}` }));
+    return { kind: "auto", ts: Date.now(), kern, werte, begriffe, merksatz, fragen };
+  }
+
+  // Mit KI: Lernzettel aus Lektion + eigenen Markierungen/Notizen
+  async function aiSummary(key) {
+    const { kurs, lesson } = info[key];
+    const n = load()[key] || {};
+    const eigene = [...(n.items || []).map(i => "- " + clean(i.text, 400)), n.text ? "Eigene Notiz: " + clean(n.text, 800) : ""].filter(Boolean).join("\n");
+    const prompt = `Du bist ein Dozent an einer Filmhochschule und schreibst einen kompakten Lernzettel zum Wiederholen – auf Deutsch, per Du, präzise und praxisnah.
+Nutze NUR Fakten aus dem Lektionstext. Keine Einleitung, keine Floskeln.
+
+Antworte ausschließlich mit einem JSON-Objekt in genau dieser Form:
+{"kern":["…"],"werte":[{"k":"…","v":"…"}],"begriffe":[{"t":"…","d":"…"}],"merksatz":"…","fragen":[{"q":"…","a":"…"}],"fokus":"…"}
+
+Regeln:
+- kern: 4–5 Kernaussagen, je ein Satz, das Wichtigste zuerst.
+- werte: bis zu 6 konkrete Zahlen/Werte/Einstellungen aus der Lektion (k = wofür, v = Wert). Leeres Array, wenn es keine gibt.
+- begriffe: 4–6 Fachbegriffe mit Erklärung in max. 15 Wörtern.
+- merksatz: ein einprägsamer Satz.
+- fragen: 4 Selbsttest-Fragen, gemischt aus Verständnis und Anwendung (z. B. für ein Instagram-Reel), mit kurzer Antwort.
+- fokus: ein Satz, der an die Markierungen/Notizen des Studenten anknüpft; leerer String, wenn keine vorhanden sind.
+
+KURS: ${kurs.titel}
+LEKTION: ${lesson.titel}
+
+LEKTIONSTEXT:
+${plain(lesson.inhalt).slice(0, 12000)}
+
+PRAXIS-ÜBUNG: ${lesson.aufgabe || "–"}
+
+MARKIERUNGEN UND NOTIZEN DES STUDENTEN:
+${eigene || "keine"}`;
+    const r = await window.Tutor.sampleJson(prompt, { modelTier: "default" });
+    const arr = (v, max) => (Array.isArray(v) ? v : []).slice(0, max);
+    const sum = {
+      kind: "ki", ts: Date.now(),
+      kern: arr(r && r.kern, 6).map(x => clean(x, 300)).filter(Boolean),
+      werte: arr(r && r.werte, 8).map(x => ({ k: clean(x && x.k, 90), v: clean(x && x.v, 140) })).filter(x => x.k && x.v),
+      begriffe: arr(r && r.begriffe, 8).map(x => ({ t: clean(x && x.t, 60), d: clean(x && x.d, 200) })).filter(x => x.t && x.d),
+      merksatz: clean(r && r.merksatz, 260),
+      fragen: arr(r && r.fragen, 6).map(x => ({ q: clean(x && x.q, 260), a: clean(x && x.a, 400) })).filter(x => x.q && x.a),
+      fokus: clean(r && r.fokus, 300)
+    };
+    if (!sum.kern.length) throw { code: "invalid_json" };
+    return sum;
+  }
+
+  function storeSummary(key, sum) {
+    const d = load();
+    const n = d[key] || (d[key] = { items: [], text: "", created: Date.now() });
+    n.summary = sum; n.updated = Date.now();
+    save(d);
+  }
+
+  /**
+   * Lernzettel sicherstellen. Mit KI (wenn verfügbar), sonst aus den Lektionsdaten.
+   * force: vorhandenen Lernzettel neu erstellen.
+   */
+  async function ensureSummary(kursId, lessonId, { force = false, quiet = false } = {}) {
+    const key = `${kursId}/${lessonId}`;
+    if (!info[key] || pending.has(key)) return;
+    const existing = (load()[key] || {}).summary;
+    if (existing && !force) return;
+    if (window.Tutor) await window.Tutor.aiReady;
+    const useAi = !!(window.Tutor && window.Tutor.aiAvailable());
+    if (!useAi) {
+      storeSummary(key, autoSummary(key));
+      updateBadge(true);
+      if (!quiet) toast(`Lernzettel für „${info[key].lesson.titel}“ im Notizheft`, () => open(key));
+      if (isOpen) render();
+      return;
+    }
+    pending.add(key);
+    queue.push(key);
+    if (isOpen) render();
+    if (!quiet) toast(`Der Assistent schreibt deinen Lernzettel zu „${info[key].lesson.titel}“ …`);
+    runQueue();
+  }
+
+  async function runQueue() {
+    if (running) return;
+    running = true;
+    while (queue.length) {
+      const key = queue.shift();
+      try {
+        storeSummary(key, await aiSummary(key));
+        toast(`Lernzettel für „${info[key].lesson.titel}“ ist fertig`, () => open(key));
+      } catch (e) {
+        // Fallback, damit trotzdem etwas im Heft steht
+        if (!(load()[key] || {}).summary) storeSummary(key, autoSummary(key));
+        const msg = window.Tutor && window.Tutor.errorText ? window.Tutor.errorText(e) : "";
+        toast(`Lernzettel aus der Lektion erstellt${msg ? " – KI gerade nicht verfügbar" : ""}`, () => open(key));
+        if (e && e.code === "rate_limited") { queue.forEach(k => pending.delete(k)); queue.length = 0; }
+      }
+      pending.delete(key);
+      updateBadge(true);
+      if (isOpen) render();
+    }
+    running = false;
+  }
+
+  function summaryHtml(key, n) {
+    if (pending.has(key)) return `<div class="np-sum loading"><div class="np-sum-head"><span class="label acc">Lernzettel</span></div><p class="thinking">Der Assistent fasst die Lektion zusammen …</p></div>`;
+    const s = n && n.summary;
+    const ai = !!(window.Tutor && window.Tutor.aiAvailable());
+    if (!s) return `<div class="np-sum empty"><div><span class="label acc">Lernzettel</span><p>Das Wichtigste dieser Lektion – geordnet zum Wiederholen.</p></div>
+      <button type="button" class="btn small primary np-sum-make">${ai ? "Mit KI erstellen" : "Erstellen"}</button></div>`;
+    return `
+      <div class="np-sum">
+        <div class="np-sum-head">
+          <span class="label acc">Lernzettel</span>
+          <span class="np-kind">${s.kind === "ki" ? "KI-Assistent" : "aus der Lektion"} · ${fmtDate(s.ts)}</span>
+        </div>
+        ${s.fokus ? `<p class="np-fokus">${esc(s.fokus)}</p>` : ""}
+        ${s.kern && s.kern.length ? `<div class="np-block"><span class="np-bl">Kernaussagen</span><ol class="np-kern">${s.kern.map(k => `<li>${esc(k)}</li>`).join("")}</ol></div>` : ""}
+        ${s.werte && s.werte.length ? `<div class="np-block"><span class="np-bl">Wichtige Werte</span><dl class="np-werte">${s.werte.map(w => `<div><dt>${esc(w.k)}</dt><dd>${esc(w.v)}</dd></div>`).join("")}</dl></div>` : ""}
+        ${s.begriffe && s.begriffe.length ? `<div class="np-block"><span class="np-bl">Begriffe</span><dl class="np-begr">${s.begriffe.map(b => `<div><dt>${esc(b.t)}</dt><dd>${esc(b.d)}</dd></div>`).join("")}</dl></div>` : ""}
+        ${s.merksatz ? `<div class="np-merk"><span class="np-bl">Merksatz</span><p>${esc(s.merksatz)}</p></div>` : ""}
+        ${s.fragen && s.fragen.length ? `<div class="np-block"><span class="np-bl">Selbsttest · tippen zum Aufdecken</span>${s.fragen.map((f, i) => `<details class="np-q"><summary><span>${i + 1}</span>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join("")}</div>` : ""}
+        <div class="np-sum-actions">
+          ${ai ? `<button type="button" class="np-sum-make" data-force="1">${s.kind === "ki" ? "Neu erstellen" : "Mit KI verbessern"}</button>` : ""}
+          <button type="button" class="np-sum-del">Entfernen</button>
+        </div>
+      </div>`;
+  }
+
   /* ---------------- Rendern ---------------- */
   const fmtDate = ts => new Date(ts).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
 
@@ -115,6 +282,7 @@
           <h3>${esc(lesson.titel)}</h3>
           <a href="#/lektion/${kurs.id}/${lesson.id}" class="np-link">Zur Lektion →</a>
         </header>
+        ${summaryHtml(key, n)}
         ${items.length ? `<ul class="np-items">${items.map(i => `
           <li class="np-item" data-id="${i.id}">
             <blockquote>${esc(i.text)}</blockquote>
@@ -134,13 +302,16 @@
     const list = showCurrent ? [ctxKey, ...keys.filter(k => k !== ctxKey)] : keys;
     setMeta(d);
     const body = panel.querySelector("#npBody");
+    const missing = order.filter(k => isDone(k) && !(d[k] && d[k].summary) && !pending.has(k));
+    const hint = missing.length ? `<div class="np-hint"><p>Für <b>${missing.length}</b> abgeschlossene ${missing.length === 1 ? "Lektion fehlt" : "Lektionen fehlt"} noch ein Lernzettel.</p>
+      <button type="button" class="btn small np-make-all">Alle erstellen</button></div>` : "";
     body.innerHTML = list.length
-      ? list.map(k => sectionHtml(k, d[k], k === ctxKey)).join("")
+      ? hint + list.map(k => sectionHtml(k, d[k], k === ctxKey)).join("")
       : `<div class="np-empty">
           <p class="np-empty-title">Dein Notizheft ist noch leer.</p>
           <p>Markiere Text in einer Lektion und tippe auf <b>＋ In Notizheft</b>, oder tippe in den Reels auf <b>☆ Merken</b>. Jeder Eintrag landet automatisch unter der passenden Lektion.</p>
           <a class="btn small" href="#/kurse">Zu den Kursen</a>
-        </div>`;
+        </div>` + hint;
     body.querySelectorAll("textarea").forEach(autosize);
     if (focusKey) {
       const sec = body.querySelector(`[data-key="${focusKey}"]`);
@@ -196,6 +367,24 @@
       updateBadge(); render();
       return;
     }
+    const make = e.target.closest(".np-sum-make");
+    if (make) {
+      const [k, l] = make.closest(".np-sec").dataset.key.split("/");
+      ensureSummary(k, l, { force: !!make.dataset.force });
+      return;
+    }
+    const sdel = e.target.closest(".np-sum-del");
+    if (sdel) {
+      if (!sdel.dataset.armed) { sdel.dataset.armed = "1"; sdel.textContent = "Wirklich entfernen?"; return; }
+      const key = sdel.closest(".np-sec").dataset.key, d = load();
+      if (d[key]) { delete d[key].summary; if (!hasContent(d[key])) delete d[key]; save(d); }
+      updateBadge(); render();
+      return;
+    }
+    if (e.target.closest(".np-make-all")) {
+      order.filter(k => isDone(k) && !(load()[k] || {}).summary).forEach((k, i) => { const [a, b] = k.split("/"); ensureSummary(a, b, { quiet: i > 0 }); });
+      return;
+    }
     if (e.target.closest(".np-close")) close();
     if (e.target.closest(".np-link")) { if (matchMedia("(max-width: 1199px)").matches) close(); }
   });
@@ -204,8 +393,17 @@
     const d = load();
     const txt = order.filter(k => hasContent(d[k])).map(k => {
       const n = d[k], { kurs, lesson } = info[k];
-      return [`## ${lesson.titel}`, `(${kurs.titel})`, "",
-        ...n.items.map(i => `> ${i.text.replace(/\n/g, "\n> ")}\n  — ${i.quelle}`),
+      const s = n.summary;
+      const zettel = s ? [
+        "LERNZETTEL",
+        ...(s.kern || []).map((k, i) => `${i + 1}. ${k}`),
+        ...(s.werte && s.werte.length ? ["", "Wichtige Werte:", ...s.werte.map(w => `- ${w.k}: ${w.v}`)] : []),
+        ...(s.begriffe && s.begriffe.length ? ["", "Begriffe:", ...s.begriffe.map(b => `- ${b.t}: ${b.d}`)] : []),
+        ...(s.merksatz ? ["", `Merksatz: ${s.merksatz}`] : []),
+        ...(s.fragen && s.fragen.length ? ["", "Selbsttest:", ...s.fragen.map((f, i) => `${i + 1}. ${f.q}\n   → ${f.a}`)] : []),
+        ""] : [];
+      return [`## ${lesson.titel}`, `(${kurs.titel})`, "", ...zettel,
+        ...(n.items || []).map(i => `> ${i.text.replace(/\n/g, "\n> ")}\n  — ${i.quelle}`),
         n.text && n.text.trim() ? `\n${n.text.trim()}` : ""].join("\n");
     }).join("\n\n");
     const out = panel.querySelector("#npExport");
@@ -278,5 +476,5 @@
   syncRoute();
   updateBadge();
 
-  window.Notes = { add, removeRef, open, close, toggle, updateBadge };
+  window.Notes = { add, removeRef, open, close, toggle, updateBadge, ensureSummary };
 })();
