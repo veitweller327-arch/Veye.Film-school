@@ -60,6 +60,11 @@
   function videoHtml(v) {
     const p = parseVideo(v.url);
     const vertical = v.hochkant || p.vertical ? " vertical" : "";
+    // In der veröffentlichten Webversion sind eingebettete Fremdplayer gesperrt → Link-Button.
+    if (p.type === "iframe" && window.VEYE_LINK_VIDEOS) {
+      const host = /youtu/.test(v.url) ? "YouTube" : /vimeo/.test(v.url) ? "Vimeo" : /instagram/.test(v.url) ? "Instagram" : "Web";
+      return `<a class="btn primary video-link" href="${esc(v.url)}" target="_blank" rel="noopener">▶ Auf ${host} ansehen</a>`;
+    }
     if (p.type === "iframe") {
       return `<div class="video-embed${vertical}"><iframe src="${esc(p.src)}" loading="lazy" allowfullscreen
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe></div>`;
@@ -293,7 +298,8 @@
       route();
     };
     document.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
-      if (!confirm("Video aus der Bibliothek entfernen?")) return;
+      // Zwei Klicks statt confirm(), das in eingebetteten Ansichten blockiert sein kann
+      if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Wirklich entfernen? Nochmal tippen"; return; }
       const list = userVideos(); list.splice(+b.dataset.del, 1); store.set("videos", list); route();
     });
     document.getElementById("exportBtn").onclick = () => {

@@ -295,8 +295,9 @@
           <div id="lbSliders"></div>
           <div class="preset-row" style="margin-top:16px">
             <button class="btn small" id="lbReset">Zurücksetzen</button>
-            <button class="btn small" id="lbCopy">Werte kopieren</button>
+            <button class="btn small" id="lbCopy">Werte anzeigen</button>
           </div>
+          <pre id="lbValues" hidden></pre>
         </div>
       </div>`;
 
@@ -351,7 +352,9 @@
     root.querySelector("#lbReset").onclick = () => { Object.assign(params, DEFAULTS); syncSliders(); render(); };
     root.querySelector("#lbCopy").onclick = () => {
       const txt = Object.entries(params).filter(([k, v]) => v !== DEFAULTS[k]).map(([k, v]) => `${k}: ${v}`).join("\n") || "Keine Änderungen";
-      navigator.clipboard?.writeText(txt).then(() => alert("Werte kopiert:\n\n" + txt), () => alert(txt));
+      const out = root.querySelector("#lbValues");
+      out.textContent = txt; out.hidden = false;
+      try { navigator.clipboard?.writeText(txt).catch(() => {}); } catch { /* nicht verfügbar */ }
     };
 
     function setSize(w, h) {
