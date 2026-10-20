@@ -95,7 +95,7 @@
   }
 
   function stepMode(root, kurs, lesson, hooks) {
-    const steps = planSteps(lesson);
+    const steps = planSteps(window.injectGrafiken ? { ...lesson, inhalt: window.injectGrafiken(kurs.id, lesson, lesson.inhalt) } : lesson);
     const key = `step:${kurs.id}/${lesson.id}`;
     const state = store.get(key, { pos: 0, answers: {} });
     if (state.pos >= steps.length) state.pos = 0;

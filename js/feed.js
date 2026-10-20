@@ -36,7 +36,7 @@
   function lessonCards(kurs, lesson) {
     const root = document.createElement("div");
     root.innerHTML = lesson.inhalt;
-    const bilder = lesson.bilder || [];
+    const bilder = [...((window.GRAFIKEN || {})[`${kurs.id}/${lesson.id}`] || []), ...(lesson.bilder || [])];
     const cards = [];
     let heading = lesson.titel, chapter = 0, firstInSection = true;
     let buf = [], bufLen = 0;
@@ -189,7 +189,7 @@
         return `${header(c)}<div class="a reel-tip tip-${c.kind}"><div class="tip-label"><span class="tip-dot"></span>${esc(c.label || TIP_LABEL[c.kind])}</div><div class="reel-text">${c.html}</div></div>`;
       case "bild":
         return `${header(c)}
-          <figure class="a reel-figure"><img src="${esc(c.bild.src)}" alt="${esc(c.bild.alt || c.heading)}" loading="lazy">
+          <figure class="a reel-figure ${c.bild.svg ? "is-svg" : ""}">${c.bild.svg ? c.bild.svg : `<img src="${esc(c.bild.src)}" alt="${esc(c.bild.alt || c.heading)}" loading="lazy">`}
           ${c.bild.text ? `<figcaption>${esc(c.bild.text)}</figcaption>` : ""}</figure>
           ${c.bild.credit ? `<div class="a reel-credit">Bild: ${c.bild.quelle ? `<a href="${esc(c.bild.quelle)}" target="_blank" rel="noopener">${esc(c.bild.credit)}</a>` : esc(c.bild.credit)}${c.bild.lizenz ? ` · ${esc(c.bild.lizenz)}` : ""}</div>` : ""}`;
       case "quiz": {

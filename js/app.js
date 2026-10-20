@@ -239,7 +239,7 @@
       store.set("mode", mode);
       tabs.forEach(t => { t.classList.toggle("active", t.dataset.mode === mode); t.setAttribute("aria-selected", t.dataset.mode === mode); });
       if (mode === "lesen") {
-        root.innerHTML = `${l.inhalt}
+        root.innerHTML = `${window.injectGrafiken ? window.injectGrafiken(k.id, l, l.inhalt) : l.inhalt}
           ${l.aufgabe ? `<div class="box task"><h4>Praxis-Übung</h4>${esc(l.aufgabe)}</div>` : ""}
           ${l.quiz?.length ? quizHtml(l.quiz) : ""}`;
         bindQuiz(l.quiz || []);

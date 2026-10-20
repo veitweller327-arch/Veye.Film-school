@@ -39,3 +39,7 @@ Alle Lektionen stehen in `data/kurse.js` – neue Lektion = neues Objekt im `lek
 ## Webversion bauen
 
 `python3 tools/build-webseite.py` erzeugt `dist/veye-film-school.html` (eine Datei mit allem), die als Webseite veröffentlicht wird.
+
+## Lern-Grafiken
+
+`data/grafiken.js` enthält 38 selbst gezeichnete, animierte SVG-Grafiken (Lichtaufbauten, Scopes, Farbkreise, Safe Zones …), die automatisch nach der passenden Abschnittsüberschrift in Lektionen, Schritt-Modus und Reels erscheinen. Fotos können zusätzlich pro Lektion über das Feld `bilder` (`{ abschnitt, src, alt, credit, lizenz, quelle }`) eingetragen werden.

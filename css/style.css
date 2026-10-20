@@ -595,3 +595,49 @@ html.reels-open, html.reels-open body { overflow: hidden; }
   .reel-text strong, .reel-statement strong, .term-desc strong, .reel-lead strong, .reel-list strong, .steps strong { background-size: 100% 100%; animation: none !important; }
   .pm-card { opacity: 0; } .pm-1 { opacity: 1; }
 }
+
+/* ---------- Lern-Grafiken (SVG) ---------- */
+.dia { display: block; width: 100%; height: auto; max-width: 100%; overflow: visible; --c: var(--acc, var(--accent)); }
+.dia .ln { fill: none; stroke: rgba(255,255,255,.55); stroke-width: 1.5; }
+.dia .gd { fill: none; stroke: rgba(255,255,255,.12); stroke-width: 1; }
+.dia .ac { fill: none; stroke: var(--c); stroke-width: 2; stroke-linecap: round; }
+.dia .acsoft { fill: none; stroke: var(--c); stroke-width: 1.5; opacity: .45; stroke-linecap: round; }
+.dia .teal { fill: none; stroke: var(--accent2); stroke-width: 2; }
+.dia .dash { stroke-dasharray: 5 5; }
+.dia .fa { fill: var(--c); }
+.dia .fteal { fill: var(--accent2); }
+.dia .fm { fill: rgba(255,255,255,.06); }
+.dia .fm2 { fill: #3a3f4b; }
+.dia .fm3 { fill: #7c8190; }
+.dia .fb { fill: #f2efe9; }
+.dia .fwhite { fill: #f2efe9; }
+.dia .fblack { fill: #050506; stroke: rgba(255,255,255,.35); }
+.dia .fwave { fill: #9cf0b4; opacity: .8; }
+.dia text { font-family: var(--font-mono); }
+.dia .t { fill: var(--muted); font-size: 10px; letter-spacing: .02em; }
+.dia .tb { fill: var(--text); font-family: var(--font-body); font-size: 12px; font-weight: 600; }
+.dia .th { fill: var(--c); font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.dia .tbig { fill: var(--text); font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+.dia .tdark { fill: #111; font-family: var(--font-body); font-size: 11px; font-weight: 700; }
+.dia .capt { fill: #fff; font-family: var(--font-display); font-size: 11px; font-weight: 800; letter-spacing: .02em; }
+.dia .capt-hi { fill: #ffd23f; }
+
+.lesson-fig { margin: 18px 0 22px; padding: 16px 16px 12px; border-radius: 14px; background: var(--bg2); border: 1px solid var(--line); }
+.lesson-fig .dia { max-height: 380px; margin: 0 auto; }
+.lesson-fig figcaption { margin-top: 10px; font-size: 13.5px; color: var(--muted); text-align: center; }
+.step-card .lesson-fig { margin: 12px 0; }
+
+.reel-figure.is-svg { background: linear-gradient(160deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); padding: 18px 14px 6px; backdrop-filter: blur(8px); }
+.reel-figure.is-svg .dia { max-height: 50vh; }
+.reel-figure.is-svg figcaption { text-align: center; padding: 8px 4px 10px; font-size: 14.5px; color: #cfd1d6; }
+
+/* Animation nur im Reels-Feed: Linien zeichnen sich, Elemente erscheinen nacheinander */
+.reel.in-view .dia .dr { stroke-dasharray: 1; animation: draw 1.3s var(--ease-out) both; animation-delay: calc(.25s + var(--i, 0) * .18s); }
+.reel.in-view .dia .dr.dash { stroke-dasharray: none; animation: fadeIn .8s ease both; }
+.reel.in-view .dia .pp { animation: fadeIn .6s var(--ease-out) both; animation-delay: calc(.45s + var(--i, 0) * .14s); }
+@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes fadeIn { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .reel.in-view .dia .dr, .reel.in-view .dia .pp { animation: none !important; } }
+.reel-bild .reel-body { padding-right: max(20px, env(safe-area-inset-right, 0px)); padding-left: max(20px, env(safe-area-inset-left, 0px)); }
+.reel-bild .reel-figure.is-svg { padding: 16px 8px 4px; }
+.reel-bild .reel-rail { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
