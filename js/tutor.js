@@ -154,6 +154,7 @@
           ${step.type !== "end" ? `<button class="btn primary" id="stepNext" ${canNext ? "" : "disabled"}>${canNext ? "Weiter →" : "Erst antworten"}</button>` : ""}
         </div>`;
 
+      if (window.enhanceTables) window.enhanceTables(root);
       root.querySelector("#stepPrev").onclick = () => { state.pos--; save(); render(); scrollTop(); };
       const next = root.querySelector("#stepNext");
       if (next) next.onclick = () => { state.pos++; save(); render(); scrollTop(); };

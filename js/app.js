@@ -243,6 +243,7 @@
           ${l.aufgabe ? `<div class="box task"><h4>Praxis-Übung</h4>${esc(l.aufgabe)}</div>` : ""}
           ${l.quiz?.length ? quizHtml(l.quiz) : ""}`;
         bindQuiz(l.quiz || []);
+        enhanceTables(root);
       } else if (mode === "tutor") {
         window.Tutor.tutorMode(root, k, l, vids);
       } else {
@@ -428,6 +429,20 @@
     return `<h1>Nicht gefunden</h1><p><a href="#/">Zur Startseite</a></p>`;
   }
 
+  // Tabellen: Spaltenköpfe als data-label für die Handy-Ansicht (Zeilenkarten)
+  function enhanceTables(root) {
+    root.querySelectorAll("table").forEach(t => {
+      if (t.parentElement.classList.contains("table-wrap")) return;
+      const heads = Array.from(t.querySelectorAll("tr:first-child th")).map(th => th.textContent.trim());
+      t.querySelectorAll("tr").forEach(tr => Array.from(tr.children).forEach((td, i) => {
+        if (td.tagName === "TD" && heads[i]) td.setAttribute("data-label", heads[i]);
+      }));
+      const w = document.createElement("div"); w.className = "table-wrap";
+      t.replaceWith(w); w.appendChild(t);
+    });
+  }
+  window.enhanceTables = enhanceTables;
+
   /* ---------------- Router ---------------- */
   function route() {
     const hash = location.hash.replace(/^#/, "") || "/";
@@ -464,6 +479,7 @@
 
     app.innerHTML = html;
     if (after) after();
+    enhanceTables(app);
 
     // aktiven Menüpunkt markieren
     document.querySelectorAll("#nav a").forEach(a => {
