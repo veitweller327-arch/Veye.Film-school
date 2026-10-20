@@ -171,6 +171,7 @@
         <a class="tool" href="#/feed"><b>Lern-Feed</b><span>Alle Lektionen als Reels zum Wischen.</span></a>
         <a class="tool" href="#/training"><b>Wiederholen</b><span>Spaced Repetition: Karten kommen wieder, bevor du sie vergisst.</span></a>
         <a class="tool" href="#/labor"><b>Grading-Labor</b><span>Eigene Bilder graden, Scopes live lesen.</span></a>
+        <a class="tool" href="#/labor?breakdown=1"><b>Breakdown</b><span>Filmbilder analysieren, dann auflösen lassen.</span></a>
         <a class="tool" href="#/videos"><b>Mediathek</b><span>${vids.length} Videos, Lektionen zugeordnet.</span></a>
         <a class="tool" href="#/glossar"><b>Glossar</b><span>${(window.GLOSSAR || []).length} Fachbegriffe von ACES bis Whip Pan.</span></a>
       </div>
@@ -421,7 +422,8 @@
         2) Wähle „Teal & Orange“ und beobachte im Vectorscope, wie sich die Wolke Richtung Hautton-Linie und Cyan aufteilt.<br>
         3) Setze „Vorher-Anteil“ auf 0,5 für einen direkten Vorher/Nachher-Vergleich.
       </div>
-      <p class="muted" style="font-size:13px">Dein Material wird nur lokal im Browser verarbeitet und nirgends hochgeladen.</p>`;
+      <p class="muted" style="font-size:13px">Dein Material wird nur lokal im Browser verarbeitet und nirgends hochgeladen.</p>
+      <section id="breakdownRoot" class="breakdown"></section>`;
   }
 
   function feedPage() {
@@ -536,7 +538,11 @@
       };
     }
     else if (parts[0] === "videos") { html = videosPage(query); after = bindVideos; }
-    else if (parts[0] === "labor") { html = laborPage(); after = () => window.Labor.mount(document.getElementById("laborRoot")); }
+    else if (parts[0] === "labor") { html = laborPage(); after = () => {
+      window.Labor.mount(document.getElementById("laborRoot"));
+      if (window.Breakdown) window.Breakdown.mount(document.getElementById("breakdownRoot"));
+      if (query.breakdown) setTimeout(() => document.getElementById("breakdownRoot").scrollIntoView({ behavior: "smooth" }), 150);
+    }; }
     else if (parts[0] === "notizheft") { html = `<div id="heftRoot"></div>`; after = () => window.Heft.mount(document.getElementById("heftRoot")); }
     else if (parts[0] === "feed") { html = feedPage(); after = bindFeed; }
     else if (parts[0] === "training") { html = trainingPage(query); after = () => bindTraining(query); }

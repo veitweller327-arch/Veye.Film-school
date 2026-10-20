@@ -213,6 +213,7 @@ window.KURSE = [
 <li>Wo ist die Kante (Backlight)? Wie dunkel ist die Schattenseite (Negative Fill)?</li>
 <li>Lichtplan skizzieren – dann selbst nachbauen.</li>
 </ol>
+<p><strong>Üben:</strong> Im <a href="#/labor?breakdown=1">Breakdown-Trainer</a> lädst du ein Standbild hoch, analysierst es selbst und lässt dir danach zeigen, was du richtig gesehen hast.</p>
 <div class="box tip"><h4>Verbindung zum Grading</h4>Als ehemaliger Colorist betont er: Der Look entsteht am Set. Ein gut gesetztes Kontrastverhältnis lässt sich im Grading verfeinern – flaches Licht nicht wirklich retten.</div>
 `,
         aufgabe: "Breakdown + Nachbau: Wähle ein Werbe-Standbild mit Person. Bestimme Key, Fill, Backlight und Negative Fill und skizziere den Lichtplan. Baue es danach mit Fenster, Bettlaken als Diffusion und schwarzem Stoff als Negative Fill nach. Vergleiche Original und Nachbau nebeneinander.",
