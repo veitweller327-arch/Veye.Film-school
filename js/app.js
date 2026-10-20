@@ -98,80 +98,133 @@
       const [k, l] = ref.split("/"); const lek = findLektion(k, l);
       return lek ? `<li><a href="#/lektion/${k}/${l}">${esc(lek.titel)}</a></li>` : "";
     }).join("");
-    return `<div class="card mentor">
+    return `<div class="mentor">
+      <span class="label">${esc(c.person)}</span>
       <h3>${esc(c.name)}</h3>
       <p>${esc(c.fokus)}</p>
       <ul>${links}</ul>
-      <a class="btn small" href="${esc(c.url)}" target="_blank" rel="noopener">▶ YouTube-Kanal</a>
+      <a class="btn small" href="${esc(c.url)}" target="_blank" rel="noopener">YouTube-Kanal ↗</a>
     </div>`;
   }
 
   /* ---------------- Seiten ---------------- */
+  const pad2 = n => String(n).padStart(2, "0");
+  const allLessons = () => KURSE.flatMap(k => k.lektionen.map(l => ({ k, l })));
+  const nextLesson = () => allLessons().find(x => !isDone(x.k.id, x.l.id)) || null;
+
+  function courseCard(k, i) {
+    const p = progress(k);
+    return `
+      <a class="course k-${k.id}" href="#/kurs/${k.id}">
+        <div class="course-frame"><span class="course-tc">${pad2(k.lektionen.length)} LEKTIONEN</span><span class="course-no">${pad2(i + 1)}</span></div>
+        <div class="course-body">
+          <h3>${esc(k.titel)}</h3>
+          <p>${esc(k.beschreibung)}</p>
+        </div>
+        <div class="course-foot" style="display:block">
+          <div class="progress"><div style="width:${p.pct}%"></div></div>
+          <div class="progress-label">${pad2(p.n)} / ${pad2(p.total)} abgeschlossen</div>
+        </div>
+      </a>`;
+  }
+
   function home() {
-    const total = KURSE.reduce((a, k) => a + k.lektionen.length, 0);
-    const fertig = KURSE.reduce((a, k) => a + progress(k).n, 0);
+    const lessons = allLessons();
+    const total = lessons.length;
+    const fertig = lessons.filter(x => isDone(x.k.id, x.l.id)).length;
+    const nx = nextLesson();
+    const headAt = nx ? lessons.findIndex(x => x === nx || (x.k === nx.k && x.l === nx.l)) : total - 1;
+    const grafiken = Object.values(window.GRAFIKEN || {}).reduce((a, l) => a + l.length, 0);
     const vids = allVideos();
     return `
-      <section class="hero">
-        <h1>Lerne Film wie an der Filmhochschule.</h1>
-        <p class="lead">Bildsprache, Kamera, Licht und Schnitt – Color Grading von den Scopes bis zum eigenen Look – und alles angewendet auf Instagram-Reels in der Edits-App.</p>
-        <div class="progress" style="max-width:420px"><div style="width:${total ? (fertig / total) * 100 : 0}%"></div></div>
-        <div class="progress-label">${fertig} von ${total} Lektionen abgeschlossen</div>
+      <section class="hero-cine bleed">
+        <div class="hero-frame hero-bars">
+          <div class="hero-light"></div>
+          <div class="hero-inner">
+            <div class="hero-meta rise"><span>${KURSE.length} Kurse</span><span>${total} Lektionen</span><span>${grafiken} Grafiken</span></div>
+            <h1 class="rise">Lerne Film wie an der <em>Filmhochschule.</em></h1>
+            <p class="lead rise">Bildsprache, Kamera, Licht und Schnitt. Color Grading von den Scopes bis zum eigenen Look. Und alles angewendet auf Reels in der Edits-App.</p>
+            <div class="hero-cta rise">
+              ${nx ? `<a class="btn primary big" href="#/lektion/${nx.k.id}/${nx.l.id}">▶ ${fertig ? "Weiterlernen" : "Erste Lektion starten"}</a>` : `<a class="btn primary big" href="#/training">Wiederholen im Training</a>`}
+              <a class="btn big" href="#/feed">Lern-Feed öffnen</a>
+            </div>
+          </div>
+        </div>
+        <div class="timeline">
+          <div class="tl-row"><span class="label">Dein Fortschritt</span><span class="label acc">${pad2(fertig)} / ${pad2(total)}</span></div>
+          <div class="tl-track" role="img" aria-label="${fertig} von ${total} Lektionen abgeschlossen">
+            ${lessons.map(x => `<i class="k-${x.k.id} ${isDone(x.k.id, x.l.id) ? "done" : ""}" title="${esc(x.l.titel)}"></i>`).join("")}
+            <span class="tl-head" style="left:calc(${((headAt + 0.5) / total) * 100}% - 1px)"></span>
+          </div>
+          <div class="tl-legend">${KURSE.map(k => `<span style="--c:var(--${k.id === "film" ? "accent" : k.id === "color" ? "accent2" : "rose"})">${esc(k.titel)}</span>`).join("")}</div>
+        </div>
       </section>
 
-      <h2>Kurse</h2>
-      <div class="grid">
-        ${KURSE.map(k => { const p = progress(k); return `
-          <a class="card" href="#/kurs/${k.id}">
-            <div class="icon">${k.icon}</div>
-            <h3>${esc(k.titel)}</h3>
-            <p>${esc(k.beschreibung)}</p>
-            <div class="progress"><div style="width:${p.pct}%"></div></div>
-            <div class="progress-label">${p.n}/${p.total} Lektionen</div>
-          </a>`; }).join("")}
+      ${nx && fertig ? `
+      <a class="resume k-${nx.k.id}" href="#/lektion/${nx.k.id}/${nx.l.id}">
+        <span class="play">▶</span>
+        <span><span class="label">${fertig ? "Als Nächstes" : "Hier beginnen"} · ${esc(nx.k.titel)}</span><strong>${esc(nx.l.titel)}</strong></span>
+        <span class="arrow">→</span>
+      </a>` : ""}
+
+      <div class="sec-head"><h2>Kurse</h2><span class="label">${KURSE.length} Kurse · ${total} Lektionen</span></div>
+      <div class="course-grid">${KURSE.map(courseCard).join("")}</div>
+
+      <div class="sec-head"><h2>Werkzeuge</h2><span class="label">Üben & nachschlagen</span></div>
+      <div class="tools">
+        <a class="tool" href="#/feed"><b>Lern-Feed</b><span>Alle Lektionen als Reels zum Wischen.</span></a>
+        <a class="tool" href="#/training"><b>Training</b><span>10 gemischte Fragen pro Runde.</span></a>
+        <a class="tool" href="#/labor"><b>Grading-Labor</b><span>Eigene Bilder graden, Scopes live lesen.</span></a>
+        <a class="tool" href="#/videos"><b>Mediathek</b><span>${vids.length} Videos, Lektionen zugeordnet.</span></a>
+        <a class="tool" href="#/glossar"><b>Glossar</b><span>${(window.GLOSSAR || []).length} Fachbegriffe von ACES bis Whip Pan.</span></a>
       </div>
 
       ${CREATORS.length ? `
-      <h2>Deine Mentoren</h2>
-      <p class="muted">An den Videos dieser Creator orientieren sich die Lektionen.</p>
-      <div class="grid">${CREATORS.map(creatorCard).join("")}</div>` : ""}
+      <div class="sec-head"><h2>Mentoren</h2><span class="label">Inhalte orientiert an</span></div>
+      <div class="mentors">${CREATORS.map(creatorCard).join("")}</div>` : ""}
 
-      <h2>Werkzeuge</h2>
-      <div class="grid">
-        <a class="card" href="#/labor"><div class="icon">🎛️</div><h3>Grading-Labor</h3><p>Eigenes Bild oder Video laden, Lift/Gamma/Gain bewegen und live Waveform, Parade & Vectorscope lesen.</p></a>
-        <a class="card" href="#/videos"><div class="icon">🎞️</div><h3>Meine Videos</h3><p>${vids.length ? vids.length + " Video(s) in deiner Bibliothek." : "Füge deine Lernvideos hinzu und ordne sie Lektionen zu."}</p></a>
-        <a class="card" href="#/feed"><div class="icon">📲</div><h3>Lern-Feed</h3><p>Alle Lektionen als Reels – wischen, lernen, Quizkarten beantworten.</p></a>
-        <a class="card" href="#/training"><div class="icon">🧠</div><h3>Training</h3><p>Gemischte Quizfragen aus allen Lektionen – zum Wiederholen.</p></a>
-        <a class="card" href="#/glossar"><div class="icon">📖</div><h3>Glossar</h3><p>${(window.GLOSSAR || []).length} Fachbegriffe von ACES bis Whip Pan.</p></a>
-      </div>
-
-      <h2>Empfohlener Lernpfad</h2>
-      <ol>
-        <li><strong>Woche 1–2:</strong> Filmstudium-Basics (Einstellungsgrößen, Kamera, Licht) – jede Übung praktisch umsetzen.</li>
-        <li><strong>Woche 3:</strong> Color Grading Basis (Korrektur vs. Grading, Scopes, Primaries) + Grading-Labor.</li>
-        <li><strong>Woche 4:</strong> Instagram Edits: Setup, Hook, Beat-Sync – erstes Reel veröffentlichen.</li>
-        <li><strong>Woche 5–6:</strong> Vertiefung: Commercial-Licht & False Color (Wandering DP), Schnitttheorie, Log/LUTs, Secondaries, Looks.</li>
-        <li><strong>Danach:</strong> Kinetic Editing & Sounddesign (Paddy Cartwright), Effekte, Export, eigene Looks – und jede Woche ein Reel als Übung.</li>
+      <div class="sec-head"><h2>Lernpfad</h2><span class="label">Empfehlung · 6 Wochen +</span></div>
+      <ol class="path">
+        <li><span class="label">Woche 1–2</span><p>Filmstudium-Basics: Einstellungsgrößen, Kamera, Licht. Jede Übung praktisch umsetzen.</p></li>
+        <li><span class="label">Woche 3</span><p>Color Grading Basis: Korrektur, Scopes, Primaries – dazu das Grading-Labor.</p></li>
+        <li><span class="label">Woche 4</span><p>Edits: Setup, Hook, Beat-Sync. Erstes Reel veröffentlichen.</p></li>
+        <li><span class="label">Woche 5–6</span><p>Vertiefung: Commercial-Licht, False Color, Schnitttheorie, Log, Looks.</p></li>
+        <li><span class="label">Danach</span><p>Kinetic Editing, Sounddesign, Effekte – und jede Woche ein Reel.</p></li>
       </ol>`;
+  }
+
+  function kursePage() {
+    return `
+      <header class="page-head"><span class="label">Übersicht</span><h1>Kurse</h1>
+        <p class="lead">Drei Kurse, aufgebaut wie ein erstes Jahr an der Filmhochschule – vom Bild über die Farbe bis zum fertigen Reel.</p></header>
+      <div class="course-grid">${KURSE.map(courseCard).join("")}</div>`;
   }
 
   function kursPage(id) {
     const k = findKurs(id);
     if (!k) return notFound();
     const p = progress(k);
+    const no = KURSE.indexOf(k) + 1;
     return `
-      <div class="breadcrumb"><a href="#/">Start</a> / ${esc(k.titel)}</div>
-      <h1>${k.icon} ${esc(k.titel)}</h1>
-      <p class="lead">${esc(k.beschreibung)}</p>
-      <div class="progress" style="max-width:420px"><div style="width:${p.pct}%"></div></div>
-      <div class="progress-label" style="margin-bottom:24px">${p.n}/${p.total} abgeschlossen</div>
-      <ul class="lesson-list">
+      <section class="course-head bleed k-${k.id}">
+        <div class="course-frame"></div>
+        <div class="course-head-in">
+          <div class="crumbs"><a href="#/">Start</a><span>/</span><a href="#/kurse">Kurse</a><span>/</span>Kurs ${pad2(no)}</div>
+          <h1>${esc(k.titel)}</h1>
+          <p class="lead">${esc(k.beschreibung)}</p>
+          <div class="progress"><div style="width:${p.pct}%"></div></div>
+          <div class="progress-label">${pad2(p.n)} / ${pad2(p.total)} Lektionen abgeschlossen</div>
+        </div>
+      </section>
+      <div class="sec-head k-${k.id}"><h2>Lektionen</h2><span class="label">${pad2(k.lektionen.length)} Einträge</span></div>
+      <ul class="edl k-${k.id}">
         ${k.lektionen.map((l, i) => `
           <li class="${isDone(k.id, l.id) ? "done" : ""}">
             <a href="#/lektion/${k.id}/${l.id}">
-              <span class="num">${isDone(k.id, l.id) ? "✓" : i + 1}</span>
-              <span class="title">${esc(l.titel)}</span>
+              <span class="edl-no">${pad2(i + 1)}</span>
+              <span class="edl-title">${esc(l.titel)}<small>${window.Feed.lessonCards(k, l).length} Karten · ${(l.quiz || []).length} Fragen${(window.GRAFIKEN || {})[k.id + "/" + l.id] ? ` · ${window.GRAFIKEN[k.id + "/" + l.id].length} Grafiken` : ""}</small></span>
               ${levelTag(l.level)}
+              <span class="edl-state">✓</span>
             </a>
           </li>`).join("")}
       </ul>`;
@@ -186,42 +239,40 @@
     const erledigt = isDone(kid, lid);
 
     return `
-      <article class="lesson">
-        <div class="breadcrumb"><a href="#/">Start</a> / <a href="#/kurs/${k.id}">${esc(k.titel)}</a> / Lektion ${idx + 1}</div>
-        ${levelTag(l.level)}
-        <h1>${esc(l.titel)}</h1>
-        ${(l.mentor || []).map(id => CREATORS.find(c => c.id === id)).filter(Boolean).map(c => `
-          <div class="box mentor-box"><h4>Orientiert an</h4><strong>${esc(c.name)}</strong> – ${esc(c.fokus)}
-          <a href="${esc(c.url)}" target="_blank" rel="noopener">Zum Kanal →</a></div>`).join("")}
+      <article class="lesson k-${k.id}">
+        <header class="lesson-head">
+          <div class="crumbs"><a href="#/">Start</a><span>/</span><a href="#/kurs/${k.id}">${esc(k.titel)}</a><span>/</span>Lektion ${pad2(idx + 1)}</div>
+          <h1>${esc(l.titel)}</h1>
+          <div class="lesson-meta">${levelTag(l.level)}<span class="label">${window.Feed.lessonCards(k, l).length} Karten · ${(l.quiz || []).length} Fragen</span>${erledigt ? `<span class="label acc">✓ abgeschlossen</span>` : ""}</div>
+          ${(l.mentor || []).map(id => CREATORS.find(c => c.id === id)).filter(Boolean).map(c => `
+            <div class="mentor-line">Orientiert an <strong>${esc(c.name)}</strong> · <a href="${esc(c.url)}" target="_blank" rel="noopener">Kanal ansehen</a></div>`).join("")}
+        </header>
 
-        <button class="reels-cta" id="reelsBtn">
-          <span class="play">▶</span>
-          <span><strong>Als Reels lernen</strong><small>${window.Feed.lessonCards(k, l).length} Karten · wischen wie bei Instagram</small></span>
-        </button>
-
-        <div class="mode-tabs" role="tablist">
-          <button class="mode-tab" data-mode="schritte" role="tab">Schritt für Schritt</button>
-          <button class="mode-tab" data-mode="tutor" role="tab" hidden>KI-Tutor</button>
-          <button class="mode-tab" data-mode="lesen" role="tab">Ganze Lektion</button>
+        <div class="lesson-tools">
+          <div class="mode-tabs" role="tablist">
+            <button class="mode-tab" data-mode="schritte" role="tab">Schritt für Schritt</button>
+            <button class="mode-tab" data-mode="tutor" role="tab" hidden>KI-Tutor</button>
+            <button class="mode-tab" data-mode="lesen" role="tab">Ganze Lektion</button>
+          </div>
+          <button class="reels-cta" id="reelsBtn"><span class="play">▶</span><span><strong>Als Reels</strong><small>wischen</small></span></button>
         </div>
         <div id="modeRoot"></div>
 
-        <h2>Deine Videos zu dieser Lektion</h2>
+        <div class="sec-head"><h2>Videos</h2><span class="label">${vids.length ? pad2(vids.length) + " zugeordnet" : "Mediathek"}</span></div>
         ${vids.length
           ? `<div class="grid">${vids.map(v => videoCard(v)).join("")}</div>`
           : `<p class="muted">Noch keine Videos zugeordnet. <a href="#/videos?kurs=${k.id}&lektion=${l.id}">Video hinzufügen →</a></p>`}
 
         ${l.quellen?.length ? `
-          <h2>Quellen & weiterführend</h2>
+          <div class="sec-head"><h2>Quellen</h2><span class="label">${pad2(l.quellen.length)} Links</span></div>
           <ul class="sources">${l.quellen.map(q => `<li><a href="${esc(q.url)}" target="_blank" rel="noopener">${esc(q.titel)}</a></li>`).join("")}</ul>` : ""}
 
-        <div style="margin-top:32px">
-          <button class="btn ${erledigt ? "" : "primary"}" id="doneBtn">${erledigt ? "✓ Abgeschlossen – rückgängig" : "Lektion abschließen"}</button>
-        </div>
-
-        <div class="lesson-nav">
-          ${prev ? `<a class="btn" href="#/lektion/${k.id}/${prev.id}">← ${esc(prev.titel)}</a>` : "<span></span>"}
-          ${next ? `<a class="btn" href="#/lektion/${k.id}/${next.id}">${esc(next.titel)} →</a>` : `<a class="btn" href="#/kurs/${k.id}">Zur Kursübersicht</a>`}
+        <div class="lesson-foot">
+          <button class="btn ${erledigt ? "" : "primary"} big" id="doneBtn">${erledigt ? "✓ Abgeschlossen – rückgängig" : "Lektion abschließen"}</button>
+          <div class="lesson-nav">
+            ${prev ? `<a class="nav-card" href="#/lektion/${k.id}/${prev.id}"><span class="label">← Vorherige</span><b>${esc(prev.titel)}</b></a>` : "<span></span>"}
+            ${next ? `<a class="nav-card next" href="#/lektion/${k.id}/${next.id}"><span class="label">Nächste →</span><b>${esc(next.titel)}</b></a>` : `<a class="nav-card next" href="#/kurs/${k.id}"><span class="label">Kurs beendet</span><b>Zur Kursübersicht</b></a>`}
+          </div>
         </div>
       </article>`;
   }
@@ -307,8 +358,8 @@
       `<option value="${k.id}/${l.id}" ${query.kurs === k.id && query.lektion === l.id ? "selected" : ""}>${esc(l.titel)}</option>`).join("")}</optgroup>`).join("");
 
     return `
-      <h1>Meine Videos</h1>
-      <p class="lead">Füge Videos hinzu, die dir zur Verfügung stehen – YouTube, Vimeo, Instagram-Reels oder lokale Dateien im Ordner <code>videos/</code> – und ordne sie einer Lektion zu. Sie erscheinen dann direkt in der Lektion.</p>
+      <header class="page-head"><span class="label">Mediathek</span><h1>Videos</h1>
+      <p class="lead">Füge Videos hinzu, die dir zur Verfügung stehen – YouTube, Vimeo, Instagram-Reels oder lokale Dateien im Ordner <code>videos/</code> – und ordne sie einer Lektion zu. Sie erscheinen dann direkt in der Lektion.</p></header>
 
       <form class="stack" id="videoForm">
         <label>Titel <input type="text" name="titel" required placeholder="z. B. Teal & Orange in 5 Minuten"></label>
@@ -319,13 +370,13 @@
         <div><button class="btn primary">Video hinzufügen</button></div>
       </form>
 
-      ${CREATORS.length ? `<h2>Kanäle</h2><div class="grid">${CREATORS.map(creatorCard).join("")}</div>` : ""}
+      ${CREATORS.length ? `<div class="sec-head"><h2>Kanäle</h2><span class="label">Mentoren</span></div><div class="mentors">${CREATORS.map(creatorCard).join("")}</div>` : ""}
 
-      <h2>Bibliothek (${vids.length})</h2>
+      <div class="sec-head"><h2>Bibliothek</h2><span class="label">${vids.length} Videos</span></div>
       ${vids.length ? `<div class="grid">${vids.map(v => videoCard(v, { showLesson: true, editable: true })).join("")}</div>`
                     : `<p class="muted">Noch leer.</p>`}
 
-      <h2>Dauerhaft speichern</h2>
+      <div class="sec-head"><h2>Dauerhaft speichern</h2></div>
       <p class="muted">Videos, die du hier hinzufügst, liegen nur in diesem Browser. Damit sie dauerhaft und auf allen Geräten in der Plattform sind, exportiere sie und füge den Code in <code>data/videos.js</code> ein (oder schick mir die Links – dann trage ich sie ein und schreibe passende Zusammenfassungen in die Lektionen).</p>
       <button class="btn" id="exportBtn">Als Code für data/videos.js exportieren</button>
       <pre id="exportOut" hidden></pre>`;
@@ -361,8 +412,8 @@
 
   function laborPage() {
     return `
-      <h1>🎛️ Grading-Labor</h1>
-      <p class="lead">Lade ein Standbild oder einen Clip und grade ihn live. Beobachte dabei die Scopes – genau so arbeiten Coloristen. Doppelklick auf einen Regler setzt ihn zurück.</p>
+      <header class="page-head"><span class="label">Werkzeug</span><h1>Grading-Labor</h1>
+      <p class="lead">Lade ein Standbild oder einen Clip und grade ihn live. Beobachte dabei die Scopes – genau so arbeiten Coloristen. Doppelklick auf einen Regler setzt ihn zurück.</p></header>
       <div id="laborRoot"></div>
       <div class="box tip"><h4>Übungen</h4>
         1) Testbild: Bringe die Graustufen-Rampe in der Parade auf deckungsgleiche Kanäle, nachdem du die Temperatur verstellt hast.<br>
@@ -374,7 +425,7 @@
 
   function feedPage() {
     const saved = window.Feed.savedCount();
-    const chips = [["alle", "Alle Kurse"], ...KURSE.map(k => [k.id, k.icon + " " + k.titel]), ["gemerkt", `★ Gemerkt (${saved})`]];
+    const chips = [["alle", "Alle Kurse"], ...KURSE.map(k => [k.id, k.titel]), ["gemerkt", `★ Gemerkt (${saved})`]];
     return `
       <section class="feed-hero">
         <div class="phone-mock" aria-hidden="true">
@@ -383,6 +434,7 @@
           <div class="pm-card pm-3"><span>Color</span><b>Lift · Gamma · Gain</b></div>
         </div>
         <div class="feed-copy">
+          <span class="label acc">Reels-Modus</span>
           <h1>Lern-Feed</h1>
           <p class="lead">Alle Lektionen als Reels: eine Idee pro Karte, Quizkarten dazwischen. Wisch nach oben für die nächste Karte, merk dir Karten mit ☆ und frag den Tutor mit „?“.</p>
           <div class="tabs" id="feedChips">${chips.map(([id, t], i) => `<button class="btn small ${i === 0 ? "active" : ""}" data-feed="${id}">${esc(t)}</button>`).join("")}</div>
@@ -408,8 +460,8 @@
 
   function trainingPage() {
     return `
-      <h1>🧠 Training</h1>
-      <p class="lead">10 zufällige Fragen aus allen Lektionen. Ideal zum Wiederholen – jeden Tag eine Runde.</p>
+      <header class="page-head"><span class="label">Wiederholen</span><h1>Training</h1>
+      <p class="lead">10 zufällige Fragen aus allen Lektionen. Ideal zum Wiederholen – jeden Tag eine Runde.</p></header>
       <div id="trainRoot"></div>`;
   }
 
@@ -417,8 +469,9 @@
     const g = window.GLOSSAR || [];
     return `
       <div class="glossar">
-        <h1>📖 Glossar</h1>
-        <input type="text" id="gSearch" placeholder="Begriff suchen …">
+        <header class="page-head"><span class="label">Nachschlagen</span><h1>Glossar</h1>
+          <p class="lead">${g.length} Fachbegriffe aus Kamera, Licht, Schnitt, Color und Social.</p></header>
+        <input type="text" id="gSearch" placeholder="Begriff suchen …" aria-label="Begriff suchen">
         <div class="grid" id="gList">
           ${g.map(([t, d]) => `<div class="entry" data-t="${esc((t + " " + d).toLowerCase())}"><dt>${esc(t)}</dt><dd>${esc(d)}</dd></div>`).join("")}
         </div>
@@ -452,6 +505,7 @@
 
     let html, after = null;
     if (!parts.length) html = home();
+    else if (parts[0] === "kurse") html = kursePage();
     else if (parts[0] === "kurs") html = kursPage(parts[1]);
     else if (parts[0] === "lektion") {
       html = lektionPage(parts[1], parts[2]);
@@ -482,10 +536,9 @@
     enhanceTables(app);
 
     // aktiven Menüpunkt markieren
+    const section = ["kurs", "lektion"].includes(parts[0]) ? "kurse" : parts[0] || "";
     document.querySelectorAll("#nav a").forEach(a => {
-      const target = a.getAttribute("href").replace(/^#/, "");
-      a.classList.toggle("active", target === "/" ? path === "/" || path === "" : path.startsWith(target) ||
-        (parts[0] === "lektion" && target === "/kurs/" + parts[1]));
+      a.classList.toggle("active", a.getAttribute("href").replace(/^#\//, "") === section);
     });
     document.getElementById("nav").classList.remove("open");
   }

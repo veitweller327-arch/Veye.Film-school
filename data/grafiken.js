@@ -227,7 +227,7 @@
 
   function jlCut() {
     const track = (y, segs, i) => segs.map(([a, b, c, t]) => `<rect x="${a}" y="${y}" width="${b - a}" height="22" rx="4" fill="${c}" class="pp" style="--i:${i}"/>${t ? T(a + 8, y + 15, t, "tdark") : ""}`).join("");
-    const A = "#ff8a3d", B = "#2ec4c4";
+    const A = "#e9a15a", B = "#6cb8b2";
     const block = (y0, title, v, a, note) => `${T(10, y0, title, "tbig")}${T(10, y0 + 16, note, "t")}
       ${T(30, y0 + 44, "V", "t", "end")}${track(y0 + 30, v, 1)}${T(30, y0 + 72, "A", "t", "end")}${track(y0 + 58, a, 2)}
       <line x1="190" y1="${y0 + 24}" x2="190" y2="${y0 + 86}" class="ln dash"/>`;
@@ -312,7 +312,7 @@
 
   function vectorscope() {
     const cx = 132, cy = 120, R = 100, s = R / 0.5;
-    const tg = { R: [.75, 0, 0, "#ff5d5d"], Mg: [.75, 0, .75, "#e05cff"], B: [0, 0, .75, "#6b8bff"], Cy: [0, .75, .75, "#2ec4c4"], G: [0, .75, 0, "#5ccf7a"], Yl: [.75, .75, 0, "#f3d03e"] };
+    const tg = { R: [.75, 0, 0, "#ff5d5d"], Mg: [.75, 0, .75, "#e05cff"], B: [0, 0, .75, "#6b8bff"], Cy: [0, .75, .75, "#6cb8b2"], G: [0, .75, 0, "#5ccf7a"], Yl: [.75, .75, 0, "#f3d03e"] };
     const [su, sv] = cbcr(0.85, 0.62, 0.5); const len = Math.hypot(su, sv);
     let seed = 11; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
     let cloud = "";
@@ -398,7 +398,7 @@
       [0.5752, 0.4242], [0.627, 0.3725], [0.6915, 0.3083], [0.7347, 0.2653]];
     const X = v => r1(30 + v * 330), Y = v => r1(250 - v * 270);
     const P = pts => pts.map(([a, b]) => `${X(a)} ${Y(b)}`).join(" L");
-    const tri = [["Rec.2020", [[0.708, 0.292], [0.17, 0.797], [0.131, 0.046]], "#b062ff"], ["DCI-P3", [[0.68, 0.32], [0.265, 0.69], [0.15, 0.06]], "#2ec4c4"], ["Rec.709", [[0.64, 0.33], [0.3, 0.6], [0.15, 0.06]], "#ff8a3d"]];
+    const tri = [["Rec.2020", [[0.708, 0.292], [0.17, 0.797], [0.131, 0.046]], "#b062ff"], ["DCI-P3", [[0.68, 0.32], [0.265, 0.69], [0.15, 0.06]], "#6cb8b2"], ["Rec.709", [[0.64, 0.33], [0.3, 0.6], [0.15, 0.06]], "#e9a15a"]];
     return W("0 0 360 260", "Farbräume im Vergleich", `
       <defs><linearGradient id="loc" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#4b5bff" stop-opacity=".35"/><stop offset=".5" stop-color="#3fd97a" stop-opacity=".3"/><stop offset="1" stop-color="#ff5a3a" stop-opacity=".35"/></linearGradient></defs>
       <path d="M${P(locus)} Z" fill="url(#loc)" stroke="rgba(255,255,255,.35)"/>
@@ -460,7 +460,7 @@
   function beats() {
     const x = t => r1(20 + t * 80);
     const ticks = Array.from({ length: 9 }, (_, k) => k * 0.5);
-    const clips = [[0, 1, "#ff8a3d"], [1, 2, "#ffb36b"], [2, 2.5, "#2ec4c4"], [2.5, 3, "#7b6cff"], [3, 3.5, "#ff4f8b"], [3.5, 4, "#2ec4c4"]];
+    const clips = [[0, 1, "#e9a15a"], [1, 2, "#f2c08a"], [2, 2.5, "#6cb8b2"], [2.5, 3, "#7b6cff"], [3, 3.5, "#ec7391"], [3.5, 4, "#6cb8b2"]];
     return W("0 0 360 200", "Schnitt auf den Beat bei 120 BPM", `
       ${ticks.map((t, i) => `<line x1="${x(t)}" y1="40" x2="${x(t)}" y2="150" class="${i % 2 ? "gd" : "ln"} dash"/>${pp(i, `<circle cx="${x(t)}" cy="40" r="${i % 2 ? 3 : 5}" class="fa"/>`)}`).join("")}
       ${Array.from({ length: 80 }, (_, k) => { const t = k * 0.05; const h = 6 + 26 * Math.exp(-((t * 2) % 1) * 5); return `<rect x="${r1(x(t))}" y="${r1(70 - h / 2)}" width="2.5" height="${r1(h)}" class="fteal"/>`; }).join("")}
@@ -485,7 +485,7 @@
     const car = (x, y) => `<path d="M${x} ${y} h70 q8 0 10 -8 l-12 -14 h-36 l-14 14 h-18 z" class="fm2"/><circle cx="${x + 14}" cy="${y + 2}" r="7" class="fb"/><circle cx="${x + 58}" cy="${y + 2}" r="7" class="fb"/>`;
     const streaks = (x, y, len, n) => Array.from({ length: n }, (_, k) => `<rect x="${x - len}" y="${y - 22 + k * 6}" width="${len}" height="3" rx="1.5" fill="url(#streak)"/>`).join("");
     return W("0 0 360 220", "Kurze und lange Verschlusszeit", `
-      <defs><linearGradient id="streak" x1="0" x2="1"><stop offset="0" stop-color="#ff8a3d" stop-opacity="0"/><stop offset="1" stop-color="#ff8a3d" stop-opacity=".8"/></linearGradient></defs>
+      <defs><linearGradient id="streak" x1="0" x2="1"><stop offset="0" stop-color="#e9a15a" stop-opacity="0"/><stop offset="1" stop-color="#e9a15a" stop-opacity=".8"/></linearGradient></defs>
       <rect x="10" y="20" width="160" height="130" rx="8" fill="rgba(255,255,255,.03)"/><rect x="190" y="20" width="160" height="130" rx="8" fill="rgba(255,255,255,.03)"/>
       ${pp(0, `${streaks(76, 104, 18, 4)}${car(60, 104)}${T(90, 176, "1/50 s", "tbig", "middle")}${T(90, 192, "normale Bewegung", "t", "middle")}`)}
       ${pp(1, `${streaks(270, 104, 70, 5)}<g opacity=".8">${car(260, 104)}</g>${T(270, 176, "1/8 s", "tbig", "middle")}${T(270, 192, "Streifen = Speed", "t", "middle")}`)}
