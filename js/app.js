@@ -140,6 +140,7 @@
       <div class="grid">
         <a class="card" href="#/labor"><div class="icon">🎛️</div><h3>Grading-Labor</h3><p>Eigenes Bild oder Video laden, Lift/Gamma/Gain bewegen und live Waveform, Parade & Vectorscope lesen.</p></a>
         <a class="card" href="#/videos"><div class="icon">🎞️</div><h3>Meine Videos</h3><p>${vids.length ? vids.length + " Video(s) in deiner Bibliothek." : "Füge deine Lernvideos hinzu und ordne sie Lektionen zu."}</p></a>
+        <a class="card" href="#/training"><div class="icon">🧠</div><h3>Training</h3><p>Gemischte Quizfragen aus allen Lektionen – zum Wiederholen.</p></a>
         <a class="card" href="#/glossar"><div class="icon">📖</div><h3>Glossar</h3><p>${(window.GLOSSAR || []).length} Fachbegriffe von ACES bis Whip Pan.</p></a>
       </div>
 
@@ -191,16 +192,18 @@
         ${(l.mentor || []).map(id => CREATORS.find(c => c.id === id)).filter(Boolean).map(c => `
           <div class="box mentor-box"><h4>Orientiert an</h4><strong>${esc(c.name)}</strong> – ${esc(c.fokus)}
           <a href="${esc(c.url)}" target="_blank" rel="noopener">Zum Kanal →</a></div>`).join("")}
-        ${l.inhalt}
 
-        ${l.aufgabe ? `<div class="box task"><h4>Praxis-Übung</h4>${esc(l.aufgabe)}</div>` : ""}
+        <div class="mode-tabs" role="tablist">
+          <button class="mode-tab" data-mode="schritte" role="tab">Schritt für Schritt</button>
+          <button class="mode-tab" data-mode="tutor" role="tab" hidden>KI-Tutor</button>
+          <button class="mode-tab" data-mode="lesen" role="tab">Ganze Lektion</button>
+        </div>
+        <div id="modeRoot"></div>
 
         <h2>Deine Videos zu dieser Lektion</h2>
         ${vids.length
           ? `<div class="grid">${vids.map(v => videoCard(v)).join("")}</div>`
           : `<p class="muted">Noch keine Videos zugeordnet. <a href="#/videos?kurs=${k.id}&lektion=${l.id}">Video hinzufügen →</a></p>`}
-
-        ${l.quiz?.length ? quizHtml(l.quiz) : ""}
 
         ${l.quellen?.length ? `
           <h2>Quellen & weiterführend</h2>
@@ -215,6 +218,38 @@
           ${next ? `<a class="btn" href="#/lektion/${k.id}/${next.id}">${esc(next.titel)} →</a>` : `<a class="btn" href="#/kurs/${k.id}">Zur Kursübersicht</a>`}
         </div>
       </article>`;
+  }
+
+  // Lernmodi einer Lektion: Schritt für Schritt / KI-Tutor / ganze Lektion lesen
+  function bindLessonModes(k, l) {
+    const root = document.getElementById("modeRoot");
+    const tabs = document.querySelectorAll(".mode-tab");
+    const tutorTab = document.querySelector('[data-mode="tutor"]');
+    const vids = allVideos().filter(v => v.kurs === k.id && v.lektion === l.id);
+    const markDone = () => { if (!isDone(k.id, l.id)) toggleDone(k.id, l.id); route(); };
+
+    function show(mode) {
+      if (mode === "tutor" && !window.Tutor.aiAvailable()) mode = "schritte";
+      store.set("mode", mode);
+      tabs.forEach(t => { t.classList.toggle("active", t.dataset.mode === mode); t.setAttribute("aria-selected", t.dataset.mode === mode); });
+      if (mode === "lesen") {
+        root.innerHTML = `${l.inhalt}
+          ${l.aufgabe ? `<div class="box task"><h4>Praxis-Übung</h4>${esc(l.aufgabe)}</div>` : ""}
+          ${l.quiz?.length ? quizHtml(l.quiz) : ""}`;
+        bindQuiz(l.quiz || []);
+      } else if (mode === "tutor") {
+        window.Tutor.tutorMode(root, k, l, vids);
+      } else {
+        window.Tutor.stepMode(root, k, l, { markDone, switchMode: show });
+      }
+    }
+    tabs.forEach(t => t.onclick = () => show(t.dataset.mode));
+    show(store.get("mode", "schritte"));
+    window.Tutor.aiReady.then(() => {
+      if (!window.Tutor.aiAvailable() || !document.body.contains(tutorTab)) return;
+      tutorTab.hidden = false;
+      if (store.get("mode", "schritte") === "tutor") show("tutor");
+    });
   }
 
   function quizHtml(quiz) {
@@ -324,6 +359,13 @@
       <p class="muted" style="font-size:13px">Dein Material wird nur lokal im Browser verarbeitet und nirgends hochgeladen.</p>`;
   }
 
+  function trainingPage() {
+    return `
+      <h1>🧠 Training</h1>
+      <p class="lead">10 zufällige Fragen aus allen Lektionen. Ideal zum Wiederholen – jeden Tag eine Runde.</p>
+      <div id="trainRoot"></div>`;
+  }
+
   function glossarPage() {
     const g = window.GLOSSAR || [];
     return `
@@ -355,12 +397,13 @@
       after = () => {
         const l = findLektion(parts[1], parts[2]);
         if (!l) return;
-        bindQuiz(l.quiz || []);
+        bindLessonModes(findKurs(parts[1]), l);
         document.getElementById("doneBtn").onclick = () => { toggleDone(parts[1], parts[2]); route(); };
       };
     }
     else if (parts[0] === "videos") { html = videosPage(query); after = bindVideos; }
     else if (parts[0] === "labor") { html = laborPage(); after = () => window.Labor.mount(document.getElementById("laborRoot")); }
+    else if (parts[0] === "training") { html = trainingPage(); after = () => window.Tutor.training(document.getElementById("trainRoot"), KURSE, isDone); }
     else if (parts[0] === "glossar") {
       html = glossarPage();
       after = () => {

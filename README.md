@@ -15,7 +15,13 @@ Reines HTML/CSS/JavaScript – kein Build, kein Server nötig.
 | 🎨 Color Grading | Korrektur vs. Grading · Scopes · Lift/Gamma/Gain · Log, LUTs & Farbräume · Secondaries · Looks · Grading am Handy |
 | 📱 Instagram Edits & Reels | Edits-App & Setup/Safe Zones · Hook · Beat-Sync · Kinetic Editing (Paddy Cartwright) · Sounddesign (Paddy Cartwright) · Text & Untertitel · Green Screen & Keyframes · Export |
 
-Jede Lektion hat Theorie, eine Praxis-Übung, ein Quiz und verlinkte Quellen.
+Jede Lektion hat Theorie, eine Praxis-Übung, ein Quiz und verlinkte Quellen – in drei Lernmodi:
+
+- **Schritt für Schritt:** Stoff in Häppchen, dazwischen Fragen, die man beantworten muss.
+- **KI-Tutor:** Gespräch mit Claude, das den Stoff erklärt, Fragen stellt und Antworten bewertet (nur in der veröffentlichten Webversion).
+- **Ganze Lektion:** alles am Stück lesen.
+
+Dazu: **Training** mit 10 zufälligen Fragen aus allen Lektionen.
 
 **Werkzeuge:** Grading-Labor (eigenes Bild/Video live graden mit Waveform, RGB-Parade, Vectorscope), Video-Bibliothek, Glossar, Lernfortschritt.
 
@@ -29,3 +35,7 @@ Unterstützt: YouTube (inkl. Shorts), Vimeo, Instagram-Reels, MP4/MOV/WebM.
 ## Inhalte erweitern
 
 Alle Lektionen stehen in `data/kurse.js` – neue Lektion = neues Objekt im `lektionen`-Array.
+
+## Webversion bauen
+
+`python3 tools/build-webseite.py` erzeugt `dist/veye-film-school.html` (eine Datei mit allem), die als Webseite veröffentlicht wird.
