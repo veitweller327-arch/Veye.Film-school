@@ -140,6 +140,7 @@
       <div class="grid">
         <a class="card" href="#/labor"><div class="icon">🎛️</div><h3>Grading-Labor</h3><p>Eigenes Bild oder Video laden, Lift/Gamma/Gain bewegen und live Waveform, Parade & Vectorscope lesen.</p></a>
         <a class="card" href="#/videos"><div class="icon">🎞️</div><h3>Meine Videos</h3><p>${vids.length ? vids.length + " Video(s) in deiner Bibliothek." : "Füge deine Lernvideos hinzu und ordne sie Lektionen zu."}</p></a>
+        <a class="card" href="#/feed"><div class="icon">📲</div><h3>Lern-Feed</h3><p>Alle Lektionen als Reels – wischen, lernen, Quizkarten beantworten.</p></a>
         <a class="card" href="#/training"><div class="icon">🧠</div><h3>Training</h3><p>Gemischte Quizfragen aus allen Lektionen – zum Wiederholen.</p></a>
         <a class="card" href="#/glossar"><div class="icon">📖</div><h3>Glossar</h3><p>${(window.GLOSSAR || []).length} Fachbegriffe von ACES bis Whip Pan.</p></a>
       </div>
@@ -193,6 +194,11 @@
           <div class="box mentor-box"><h4>Orientiert an</h4><strong>${esc(c.name)}</strong> – ${esc(c.fokus)}
           <a href="${esc(c.url)}" target="_blank" rel="noopener">Zum Kanal →</a></div>`).join("")}
 
+        <button class="reels-cta" id="reelsBtn">
+          <span class="play">▶</span>
+          <span><strong>Als Reels lernen</strong><small>${window.Feed.lessonCards(k, l).length} Karten · wischen wie bei Instagram</small></span>
+        </button>
+
         <div class="mode-tabs" role="tablist">
           <button class="mode-tab" data-mode="schritte" role="tab">Schritt für Schritt</button>
           <button class="mode-tab" data-mode="tutor" role="tab" hidden>KI-Tutor</button>
@@ -244,6 +250,12 @@
       }
     }
     tabs.forEach(t => t.onclick = () => show(t.dataset.mode));
+    const idx = k.lektionen.indexOf(l);
+    document.getElementById("reelsBtn").onclick = () => window.Feed.openLesson(k, l, {
+      isDone, nextLesson: k.lektionen[idx + 1],
+      markDone: (kid, lid) => { if (!isDone(kid, lid)) toggleDone(kid, lid); },
+      onClose: () => route()
+    });
     show(store.get("mode", "schritte"));
     window.Tutor.aiReady.then(() => {
       if (!window.Tutor.aiAvailable() || !document.body.contains(tutorTab)) return;
@@ -359,6 +371,40 @@
       <p class="muted" style="font-size:13px">Dein Material wird nur lokal im Browser verarbeitet und nirgends hochgeladen.</p>`;
   }
 
+  function feedPage() {
+    const saved = window.Feed.savedCount();
+    const chips = [["alle", "Alle Kurse"], ...KURSE.map(k => [k.id, k.icon + " " + k.titel]), ["gemerkt", `★ Gemerkt (${saved})`]];
+    return `
+      <section class="feed-hero">
+        <div class="phone-mock" aria-hidden="true">
+          <div class="pm-card pm-1"><span>Licht</span><b>Key · Fill · Back</b></div>
+          <div class="pm-card pm-2"><span>Kurzer Check</span><b>1/50 s bei 25 fps?</b></div>
+          <div class="pm-card pm-3"><span>Color</span><b>Lift · Gamma · Gain</b></div>
+        </div>
+        <div class="feed-copy">
+          <h1>Lern-Feed</h1>
+          <p class="lead">Alle Lektionen als Reels: eine Idee pro Karte, Quizkarten dazwischen. Wisch nach oben für die nächste Karte, merk dir Karten mit ☆ und frag den Tutor mit „?“.</p>
+          <div class="tabs" id="feedChips">${chips.map(([id, t], i) => `<button class="btn small ${i === 0 ? "active" : ""}" data-feed="${id}">${esc(t)}</button>`).join("")}</div>
+          <button class="btn primary big" id="feedStart">▶ Feed starten</button>
+          <p class="muted" id="feedNote" style="font-size:13px">Der Feed merkt sich, wo du aufgehört hast.</p>
+        </div>
+      </section>`;
+  }
+
+  function bindFeed() {
+    let filter = "alle";
+    document.querySelectorAll("[data-feed]").forEach(b => b.onclick = () => {
+      filter = b.dataset.feed;
+      document.querySelectorAll("[data-feed]").forEach(x => x.classList.toggle("active", x === b));
+    });
+    document.getElementById("feedStart").onclick = () => {
+      const f = window.Feed.openAll(KURSE, filter, {
+        isDone, markDone: (kid, lid) => { if (!isDone(kid, lid)) toggleDone(kid, lid); }, onClose: () => route()
+      });
+      if (!f) document.getElementById("feedNote").textContent = "Noch keine Karten gemerkt. Tippe im Feed auf ☆ Merken.";
+    };
+  }
+
   function trainingPage() {
     return `
       <h1>🧠 Training</h1>
@@ -403,6 +449,7 @@
     }
     else if (parts[0] === "videos") { html = videosPage(query); after = bindVideos; }
     else if (parts[0] === "labor") { html = laborPage(); after = () => window.Labor.mount(document.getElementById("laborRoot")); }
+    else if (parts[0] === "feed") { html = feedPage(); after = bindFeed; }
     else if (parts[0] === "training") { html = trainingPage(); after = () => window.Tutor.training(document.getElementById("trainRoot"), KURSE, isDone); }
     else if (parts[0] === "glossar") {
       html = glossarPage();

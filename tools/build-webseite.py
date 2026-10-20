@@ -9,7 +9,7 @@ body = re.search(r"<body>(.*)</body>", html, re.S).group(1)
 body = re.sub(r'\s*<script src="[^"]+"></script>', "", body)
 scripts = "".join(
     f"<script>\n{(root / f).read_text(encoding='utf-8')}\n</script>\n"
-    for f in ["data/kurse.js", "data/videos.js", "js/labor.js", "js/tutor.js", "js/app.js"])
+    for f in ["data/kurse.js", "data/videos.js", "js/labor.js", "js/tutor.js", "js/feed.js", "js/app.js"])
 out = f"""<title>Veye Film School</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="Lernplattform für Filmstudium-Grundlagen, Color Grading und Instagram-Edits.">

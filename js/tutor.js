@@ -417,5 +417,17 @@ ${vids ? `\nVIDEOS ZU DIESER LEKTION (kannst du empfehlen):\n${vids}` : ""}`;
     newRound();
   }
 
-  window.Tutor = { aiReady, aiAvailable, stepMode, tutorMode, training };
+  // Einzelne Frage zu einem Textausschnitt (z. B. aus dem Reels-Modus)
+  async function ask(lessonTitle, contextText, question, out, btn) {
+    if (!aiAvailable()) { out.hidden = false; out.innerHTML = `<p class="muted">${esc(aiErrorText({ code: "not_granted" }))}</p>`; return; }
+    btn.disabled = true; out.hidden = false; out.innerHTML = `<p class="thinking">Tutor denkt nach …</p>`;
+    try {
+      await aiFn(`Du bist ein Dozent an einer Filmhochschule (Kamera, Licht, Schnitt, Color Grading, Instagram-Edits). Beantworte die Frage eines Studenten auf Deutsch, duze ihn, kurz und praxisnah (max. 6 Sätze oder eine kurze Liste).\n\nLEKTION: ${lessonTitle}\nLERNKARTE:\n${String(contextText).slice(0, 4000)}\n\nFRAGE:\n${question}`,
+        { modelTier: "quick", cache: false, onText: ({ text }) => { out.innerHTML = md(text); } });
+    } catch (e) {
+      out.innerHTML = (e && e.text ? md(e.text) : "") + `<p class="muted">${esc(aiErrorText(e))}</p>`;
+    } finally { btn.disabled = false; }
+  }
+
+  window.Tutor = { aiReady, aiAvailable, stepMode, tutorMode, training, ask };
 })();
