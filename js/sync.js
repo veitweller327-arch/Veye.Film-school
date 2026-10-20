@@ -21,6 +21,74 @@
   const parse = s => { try { return JSON.parse(s); } catch { return null; } };
   const device = (() => { try { let d = localStorage.getItem("veye-device"); if (!d) { d = Math.random().toString(36).slice(2, 10); localStorage.setItem("veye-device", d); } return d; } catch { return "x"; } })();
 
+  /* ---------------- Prüfen (Sicherheit) ----------------
+   * Alles, was aus der Cloud oder einer Backup-Datei kommt, gilt als nicht vertrauenswürdig:
+   * Form und Typen werden geprüft, gefährliche Schlüssel und Werte verworfen, Größen begrenzt.
+   * Die Anzeige escapet zusätzlich selbst – das hier ist die zweite Verteidigungslinie. */
+  const MAX_KEY = 25e6;                  // Zeichen je Speicherschlüssel
+  const BAD = new Set(["__proto__", "constructor", "prototype"]);
+  const IMG_URL = /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/;
+  const COLOR = /^#[0-9a-f]{3,8}$/i;
+  const isObj = x => !!x && typeof x === "object" && !Array.isArray(x);
+  const str = (x, n = 20000) => typeof x === "string" ? x.slice(0, n) : x == null ? undefined : String(x).slice(0, n);
+  const num = x => (typeof x === "number" && isFinite(x) ? x : undefined);
+  const id = x => (typeof x === "string" || typeof x === "number") && String(x).length <= 200 ? String(x) : null;
+  const webUrl = u => { u = String(u || "").trim().replace(/[\u0000- ]/g, ""); if (!u) return false; if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) return true; try { return /^https?:$/.test(new URL(u).protocol); } catch { return false; } };
+  const safeParse = s => { try { return JSON.parse(s, (k, v) => (BAD.has(k) ? undefined : v)); } catch { return null; } };
+  const dict = (o, f) => { const out = {}; if (isObj(o)) for (const [k, v] of Object.entries(o)) { if (BAD.has(k) || k.length > 200) continue; const c = f(v, k); if (c !== undefined) out[k] = c; } return out; };
+  const list = (a, f, max = 5000) => (Array.isArray(a) ? a.slice(0, max).map(f).filter(x => x !== undefined) : []);
+
+  // Tiefe Kopie ohne gefährliche Schlüssel, mit Grenzen für Tiefe, Listen und Textlänge.
+  // Unbekannte Felder bleiben erhalten (kein Datenverlust), nur riskante Werte werden korrigiert.
+  function deep(v, d = 0) {
+    if (d > 12) return undefined;
+    if (typeof v === "string") return v.length > 400000 ? v.slice(0, 400000) : v;
+    if (typeof v === "number") return isFinite(v) ? v : 0;
+    if (typeof v === "boolean" || v === null) return v;
+    if (Array.isArray(v)) return v.slice(0, 50000).map(x => deep(x, d + 1)).filter(x => x !== undefined);
+    if (isObj(v)) return dict(v, x => deep(x, d + 1));
+    return undefined;
+  }
+  const heftItem = it => {
+    if (!isObj(it) || !id(it.id) || !["img", "sticky", "text"].includes(it.type)) return undefined;
+    const o = { ...it, id: id(it.id) };
+    if (o.color !== undefined && !COLOR.test(o.color)) delete o.color;
+    if (o.size !== undefined && !["s", "m", "l"].includes(o.size)) delete o.size;
+    if (o.data !== undefined && !(typeof o.data === "string" && IMG_URL.test(o.data))) delete o.data;
+    for (const k of ["x", "y", "w", "rot"]) if (o[k] !== undefined && num(o[k]) === undefined) o[k] = 0;
+    return o;
+  };
+  const page = p => (isObj(p) ? { ...p,
+    items: list(p.items, heftItem),
+    strokes: list(p.strokes, s => (isObj(s) && Array.isArray(s.p) ? { ...s, c: COLOR.test(s.c) ? s.c : "#2b3a8f",
+      p: s.p.filter(pt => Array.isArray(pt) && pt.length >= 2 && pt.every(n => typeof n === "number")) } : undefined)),
+    hl: list(p.hl, h => (isObj(h) && id(h.id) ? { ...h, id: id(h.id), c: COLOR.test(h.c) ? h.c : "#ffe14d" } : undefined)) } : undefined);
+
+  const CLEAN = {
+    done: o => (isObj(o) ? o : {}),
+    aktiv: o => dict(o, v => num(v)),
+    feedAnswers: o => (isObj(o) ? o : {}),
+    srs: o => dict(o, v => (isObj(v) ? v : undefined)),
+    notes: o => dict(o, n => (isObj(n) ? { ...n,
+      items: list(n.items, i => (isObj(i) && id(i.id) ? { ...i, id: id(i.id), text: str(i.text) || "", quelle: str(i.quelle, 300) || "" } : undefined)),
+      text: str(n.text, 400000) || "", ...(n.summary !== undefined ? { summary: isObj(n.summary) ? n.summary : undefined } : {}) } : undefined)),
+    heft: o => (isObj(o) ? { ...o, pages: dict(o.pages, page), free: list(o.free, f => (isObj(f) && id(f.id) ? { ...f, id: id(f.id) } : undefined), 1000) } : {}),
+    praxis: o => dict(o, a => (Array.isArray(a) ? list(a, t => (isObj(t) && num(t.ts) !== undefined
+      ? { ...t, thumb: typeof t.thumb === "string" && IMG_URL.test(t.thumb) ? t.thumb : "" } : undefined), 500) : undefined)),
+    // Gemerkte Karten: nur der Verweis wird gebraucht, der Inhalt kommt aus den Lektionsdaten.
+    saved: a => list(a, s => (isObj(s) && typeof s.id === "string" && s.id.length < 4000 && id(s.kurs) && id(s.lektion)
+      ? { id: s.id, kurs: id(s.kurs), lektion: id(s.lektion), type: str(s.type, 40), ...(num(s.qi) !== undefined ? { qi: s.qi } : {}) } : undefined)),
+    videos: a => list(a, v => (isObj(v) && typeof v.url === "string" && webUrl(v.url) ? { ...v } : undefined), 2000),
+  };
+  /** Liefert bereinigtes JSON oder null, wenn der Wert unbrauchbar ist. */
+  function clean(key, s) {
+    if (s == null || typeof s !== "string" || s.length > MAX_KEY || !CLEAN[key]) return null;
+    const v = deep(safeParse(s));
+    if (v == null || typeof v !== "object") return null;
+    return JSON.stringify(CLEAN[key](v));
+  }
+  const cleanImage = u => (typeof u === "string" && u.length < 15e6 && IMG_URL.test(u) ? u : null);
+
   /* ---------------- Zusammenführen ---------------- */
   function mergeValues(key, local, remote) {
     const L = parse(local), R = parse(remote);
@@ -34,7 +102,8 @@
     }
     const out = { ...R };
     for (const [k, lv] of Object.entries(L)) {
-      const rv = R[k];
+      if (BAD.has(k)) continue;
+      const rv = Object.prototype.hasOwnProperty.call(R, k) ? R[k] : undefined;
       if (rv === undefined) { out[k] = lv; continue; }
       if (JSON.stringify(rv) === JSON.stringify(lv)) continue;
       if (key === "srs") out[k] = (lv.last || 0) >= (rv.last || 0) ? lv : rv;
@@ -86,10 +155,12 @@
   }
   const blobToDataUrl = b => new Promise(r => { const f = new FileReader(); f.onload = () => r(f.result); f.onerror = () => r(""); f.readAsDataURL(b); });
   function dataUrlToBlob(u) {
-    const [h, data] = String(u).split(","); if (!data) return null;
-    const bin = atob(data), a = new Uint8Array(bin.length);
+    if (!cleanImage(u)) return null; // nur echte Bilder (png/jpeg/webp/gif)
+    const [h, data] = String(u).split(",");
+    let bin; try { bin = atob(data); } catch { return null; }
+    const a = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
-    return new Blob([a], { type: (h.match(/data:([^;]+)/) || [])[1] || "image/jpeg" });
+    return new Blob([a], { type: h.match(/data:([^;]+)/)[1] });
   }
 
   /* ---------------- Cloud (Claude-Konto) ---------------- */
@@ -111,7 +182,8 @@
     const first = await col().doc(`${name}~0`).get();
     if (!first.exists) return null;
     const d0 = first.data(); let s = d0.v || "";
-    for (let i = 1; i < (d0.parts || 1); i++) { const p = await col().doc(`${name}~${i}`).get(); if (!p.exists) return null; s += p.data().v || ""; }
+    const parts = Math.min(+d0.parts || 1, 200);
+    for (let i = 1; i < parts; i++) { const p = await col().doc(`${name}~${i}`).get(); if (!p.exists) return null; s += p.data().v || ""; }
     return { v: s, t: d0.t || 0, by: d0.by };
   }
 
@@ -124,7 +196,9 @@
       m.keys = m.keys || {};
       for (const key of KEYS) {
         const local = ls.get(key);
-        const remote = await readChunks("k." + key);
+        let remote = await readChunks("k." + key);
+        if (remote) remote.v = clean(key, remote.v); // Cloud-Daten erst prüfen
+        if (remote && remote.v == null) remote = null; // unbrauchbar → wie nicht vorhanden
         const km = m.keys[key] || {};
         const localChanged = hash(local) !== km.h;
         const remoteChanged = remote && remote.t !== km.t;
@@ -208,17 +282,27 @@
     return "gespeichert";
   }
   async function importBackup(file) {
-    const j = parse(await file.text());
-    if (!j || j.app !== "veye-film-school" || !j.data) throw new Error("Keine gültige Veye-Backup-Datei.");
+    if (!file || file.size > 300e6) throw new Error("Datei zu groß für ein Veye-Backup.");
+    const j = safeParse(await file.text());
+    if (!isObj(j) || j.app !== "veye-film-school" || !isObj(j.data)) throw new Error("Keine gültige Veye-Backup-Datei.");
+    let n = 0;
     for (const k of KEYS) {
-      if (j.data[k] == null) continue;
+      const raw = j.data[k];
+      if (raw == null) continue;
+      const v = clean(k, typeof raw === "string" ? raw : JSON.stringify(raw));
+      if (v == null) continue; // unbrauchbar → überspringen, nichts überschreiben
       const cur = ls.get(k);
-      ls.set(k, cur ? mergeValues(k, cur, j.data[k]) : j.data[k]);
+      ls.set(k, cur ? clean(k, mergeValues(k, cur, v)) ?? cur : v);
+      n++;
     }
-    for (const [id, url] of Object.entries(j.images || {})) { const b = dataUrlToBlob(url); if (b) await putImage(id, b); }
+    let imgs = 0;
+    for (const [id, url] of Object.entries(isObj(j.images) ? j.images : {})) {
+      if (imgs >= 2000 || BAD.has(id) || id.length > 200) continue;
+      const b = dataUrlToBlob(url); if (b) { await putImage(id, b); imgs++; }
+    }
     window.dispatchEvent(new CustomEvent("veye:sync"));
     if (ready) syncNow("import");
-    return Object.keys(j.data).length;
+    return n;
   }
 
   window.Sync = { start, syncNow: () => syncNow("manual"), info, onChange: f => { listeners.add(f); return () => listeners.delete(f); }, exportBackup, importBackup };

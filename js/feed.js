@@ -372,8 +372,8 @@
         const idx = list.findIndex(s => s.id === id);
         if (idx >= 0) list.splice(idx, 1);
         else {
-          const { kurs, lesson, q, ...rest } = c;
-          list.push({ ...rest, id, kurs: kurs.id, lektion: lesson.id, first: false });
+          // nur der Verweis – der Inhalt wird beim Öffnen aus den Lektionsdaten erzeugt
+          list.push({ id, kurs: c.kurs.id, lektion: c.lesson.id, type: c.type, ...(c.qi != null ? { qi: c.qi } : {}) });
         }
         store.set("saved", list);
         if (window.Notes) {
@@ -449,11 +449,13 @@
     let cards = [];
     if (filter === "gemerkt") {
       store.get("saved", []).forEach(s => {
+        if (!s || typeof s !== "object") return;
         const kurs = kurse.find(k => k.id === s.kurs); const lesson = kurs?.lektionen.find(l => l.id === s.lektion);
         if (!kurs || !lesson) return;
-        const c = { ...s, kurs, lesson };
-        if (s.type === "quiz") { if (!lesson.quiz || !lesson.quiz[s.qi]) return; c.q = lesson.quiz[s.qi]; }
-        cards.push(c);
+        // Sicherheit: gespeicherte Inhalte (Sync/Backup) nie als HTML rendern – die Karte wird
+        // über ihre ID aus den Lektionsdaten neu erzeugt.
+        const c = lessonCards(kurs, lesson).find(x => cardId(x) === s.id);
+        if (c) cards.push({ ...c, first: false });
       });
       if (!cards.length) return null;
     } else {

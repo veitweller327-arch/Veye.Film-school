@@ -73,3 +73,17 @@ Beim Abschließen einer Lektion legt der KI-Assistent einen Lernzettel ins Notiz
 ## Geräte-Synchronisierung & Backup
 
 `js/sync.js`: In der Claude-Webversion werden `done`, `notes`, `heft`, `srs`, `aktiv`, `praxis`, `saved`, `feedAnswers`, `videos` und die Notizheft-Bilder automatisch im privaten Speicherbereich des Claude-Kontos abgeglichen (`data/users/<id>/…`, 200-KB-Teile). Haben sich beide Seiten geändert, wird zusammengeführt (Notizen je Lektion, Karten nach letzter Antwort, Heftseiten nach Elementen). Seite „Geräte & Backup“ (`#/sync`): Status, manueller Abgleich, Backup-Datei speichern/laden (z. B. über iCloud Drive) – auch in der installierten App.
+
+## Sicherheit
+
+- **Fremddaten gelten als nicht vertrauenswürdig.** Alles aus der Cloud-Synchronisierung oder einer Backup-Datei prüft `js/sync.js` (`clean()`), bevor es gespeichert wird:
+  - Typen und Formen werden geprüft.
+  - `__proto__`/`constructor`/`prototype` werden verworfen.
+  - Bilder sind nur als `data:image/(png|jpeg|webp|gif)` zulässig, Video-Links nur als http(s) oder relativer Pfad.
+  - Größen und Listenlängen sind begrenzt.
+- **Die Anzeige escapet zusätzlich jeden gespeicherten Wert.** Gemerkte Reels werden nie aus gespeichertem HTML gerendert, sondern über ihre ID aus den Lektionsdaten neu erzeugt.
+- **Die installierte App** (`index.html`) hat eine Content-Security-Policy:
+  - nur eigene Skripte, keine Inline-Skripte, keine Plugins
+  - Einbettungen nur von YouTube, Vimeo und Instagram
+- **Cloud-Daten** liegen im privaten Bereich `data/users/<id>/` des Claude-Kontos. Andere Betrachter des Artifacts können ihn weder lesen noch beschreiben.
+- **Backups nur aus eigener Quelle laden.** Eine Backup-Datei enthält alle Notizen und Bilder im Klartext und sollte nicht weitergegeben werden.

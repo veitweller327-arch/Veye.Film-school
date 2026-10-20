@@ -42,8 +42,17 @@
     return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
+  // Nur http(s) oder relative Pfade – verhindert javascript:/data:-Links aus Sync oder Backup.
+  const isWebUrl = u => {
+    u = String(u || "").trim().replace(/[\u0000-\u0020]/g, "");
+    if (!u) return false;
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) return true; // relativer Pfad (z. B. videos/clip.mp4)
+    try { return /^https?:$/.test(new URL(u).protocol); } catch { return false; }
+  };
+
   function parseVideo(url) {
     url = String(url || "").trim();
+    if (!isWebUrl(url)) return { type: "invalid", src: "" };
     let m;
     if ((m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))([\w-]{11})/))) {
       return { type: "iframe", src: `https://www.youtube-nocookie.com/embed/${m[1]}`, vertical: url.includes("/shorts/") };
@@ -74,6 +83,7 @@
     if (p.type === "video") {
       return `<div class="video-embed${vertical}"><video src="${esc(p.src)}" controls preload="metadata"></video></div>`;
     }
+    if (p.type === "invalid") return `<p class="muted">Ungültige Video-Adresse (nur http/https).</p>`;
     return `<p><a href="${esc(p.src)}" target="_blank" rel="noopener">▶ Video öffnen</a></p>`;
   }
 
@@ -84,7 +94,7 @@
       ${opts.showLesson && lektion ? `<div class="muted" style="font-size:13px">→ <a href="#/lektion/${esc(v.kurs)}/${esc(v.lektion)}">${esc(lektion.titel)}</a></div>` : ""}
       ${videoHtml(v)}
       ${v.notizen ? `<div class="notes">${esc(v.notizen)}</div>` : ""}
-      ${opts.editable && v._src === "browser" ? `<button class="btn small danger" data-del="${v._i}" style="margin-top:8px">Entfernen</button>` : ""}
+      ${opts.editable && v._src === "browser" ? `<button class="btn small danger" data-del="${+v._i}" style="margin-top:8px">Entfernen</button>` : ""}
       ${opts.editable && v._src === "datei" ? `<div class="muted" style="font-size:12px;margin-top:8px">aus data/videos.js</div>` : ""}
     </div>`;
   }
@@ -472,10 +482,12 @@
 
   function bindVideos() {
     const form = document.getElementById("videoForm");
+    form.querySelector("[name=url]").oninput = e => e.target.setCustomValidity("");
     form.onsubmit = e => {
       e.preventDefault();
       const f = new FormData(form);
       const [kurs, lektion] = String(f.get("ziel")).split("/");
+      if (!isWebUrl(String(f.get("url")).trim())) { form.querySelector("[name=url]").setCustomValidity("Bitte eine http(s)-Adresse"); form.reportValidity(); return; }
       const list = userVideos();
       list.push({
         titel: f.get("titel").trim(), url: f.get("url").trim(), kurs, lektion,

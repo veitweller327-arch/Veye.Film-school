@@ -6,6 +6,7 @@
  * Speicher: localStorage "veye:praxis" → { "kurs/lektion": [ Versuch, … ] }
  */
 (function () {
+  const safeThumb = u => typeof u === "string" && /^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/.test(u);
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const load = () => { try { return JSON.parse(localStorage.getItem("veye:praxis")) || {}; } catch { return {}; } };
   const save = d => { try { localStorage.setItem("veye:praxis", JSON.stringify(d)); return true; } catch { return false; } };
@@ -74,8 +75,8 @@
         ${tries.slice().reverse().map((t, i) => `
           <article class="px-try">
             <header><span class="label">Versuch ${tries.length - i} · ${fmt(t.ts)}</span></header>
-            <div class="px-try-grid ${t.thumb ? "" : "no-img"}">
-              ${t.thumb ? `<img src="${t.thumb}" alt="Dein Ergebnis vom ${fmt(t.ts)}">` : ""}
+            <div class="px-try-grid ${safeThumb(t.thumb) ? "" : "no-img"}">
+              ${safeThumb(t.thumb) ? `<img src="${esc(t.thumb)}" alt="Dein Ergebnis vom ${esc(fmt(t.ts))}">` : ""}
               <dl>${QUESTIONS.map(([id, q]) => t[id] ? `<div><dt>${q}</dt><dd>${esc(t[id])}</dd></div>` : "").join("")}</dl>
             </div>
             ${t.feedback ? `<div class="px-feedback"><span class="label acc">Feedback vom Dozenten</span>${md(t.feedback)}</div>`
@@ -147,7 +148,7 @@
         const lim = window.Tutor.imageLimits ? await window.Tutor.imageLimits() : null;
         if (lim && lim.images) {
           if (blob) images = [blob];
-          else if (t.thumb) images = [dataUrlToBlob(t.thumb)];
+          else if (safeThumb(t.thumb)) images = [dataUrlToBlob(t.thumb)];
         }
       } catch { images = undefined; }
       const lessonText = window.Tutor.htmlToText ? window.Tutor.htmlToText(l.inhalt).slice(0, 6000) : "";

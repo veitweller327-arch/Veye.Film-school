@@ -288,7 +288,7 @@ ${eigene || "keine"}`;
         </header>
         ${summaryHtml(key, n)}
         ${items.length ? `<ul class="np-items">${items.map(i => `
-          <li class="np-item" data-id="${i.id}">
+          <li class="np-item" data-id="${esc(i.id)}">
             <blockquote>${esc(i.text)}</blockquote>
             <div class="np-item-foot"><span>${esc(i.quelle)} · ${fmtDate(i.ts)}</span><button type="button" class="np-del" aria-label="Eintrag löschen">Löschen</button></div>
           </li>`).join("")}</ul>` : ""}
@@ -318,7 +318,7 @@ ${eigene || "keine"}`;
         </div>` + hint;
     body.querySelectorAll("textarea").forEach(autosize);
     if (focusKey) {
-      const sec = body.querySelector(`[data-key="${focusKey}"]`);
+      const sec = body.querySelector(`[data-key="${CSS.escape(focusKey)}"]`);
       if (sec) { sec.scrollIntoView({ block: "start" }); sec.classList.add("flash"); }
     }
   }

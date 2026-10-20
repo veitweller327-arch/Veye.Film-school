@@ -39,8 +39,9 @@
     return new Promise(res => { const tx = d.transaction("bilder", "readwrite"); tx.objectStore("bilder").put(blob, id); tx.oncomplete = () => res(true); tx.onerror = () => res(false); });
   }
   const urlCache = {};
+  const SAFE_IMG = /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=\s]+$/;
   async function imageUrl(item) {
-    if (item.data) return item.data;
+    if (item.data) return SAFE_IMG.test(item.data) ? item.data : "";
     if (urlCache[item.id]) return urlCache[item.id];
     const d = await db(); if (!d) return "";
     return new Promise(res => {
@@ -134,7 +135,7 @@
         const n = notes[p.key] || {}, s = n.summary;
         const sub = s ? `Lernzettel · ${new Date(s.ts).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}` : "Lernzettel";
         if (!s) return pageHead(p, sub) + `<p class="hand-muted">Hier steht bald das Wichtigste dieser Lektion.</p>
-          <button type="button" class="paper-btn" data-make="${p.key}">Lernzettel schreiben lassen</button>`;
+          <button type="button" class="paper-btn" data-make="${esc(p.key)}">Lernzettel schreiben lassen</button>`;
         return pageHead(p, sub) + `
           ${s.fokus ? `<p class="focus-line">${esc(s.fokus)}</p>` : ""}
           ${s.kern && s.kern.length ? `<h3 class="hand-h">Das Wichtigste</h3><ol class="hand-list">${s.kern.map(k => `<li>${esc(k)}</li>`).join("")}</ol>` : ""}
@@ -153,7 +154,7 @@
           <div class="lined" contenteditable="true" spellcheck="false" data-own="${p.key}" data-placeholder="Hier schreiben …">${esc(n.text || "")}</div>`;
       }
       case "frei": {
-        return `<div class="free-head" contenteditable="true" spellcheck="false" data-free-title="${p.free.id}" data-placeholder="Titel …">${esc(p.free.title || "")}</div>
+        return `<div class="free-head" contenteditable="true" spellcheck="false" data-free-title="${esc(p.free.id)}" data-placeholder="Titel …">${esc(p.free.title || "")}</div>
           <div class="free-date">${esc(p.free.date || "")}</div>`;
       }
     }
@@ -302,12 +303,12 @@
     n.style.width = `calc(var(--w) * ${it.w})`;
     n.style.setProperty("--rot", (it.rot || 0) + "deg");
     if (it.type === "img") {
-      n.innerHTML = `<div class="tape"></div><div class="polaroid"><img alt="Skizze" draggable="false"><div class="pol-cap" contenteditable="true" spellcheck="false" data-cap="${it.id}" data-placeholder="Beschriftung">${esc(it.cap || "")}</div></div>
+      n.innerHTML = `<div class="tape"></div><div class="polaroid"><img alt="Skizze" draggable="false"><div class="pol-cap" contenteditable="true" spellcheck="false" data-cap="${esc(it.id)}" data-placeholder="Beschriftung">${esc(it.cap || "")}</div></div>
         <button type="button" class="it-del" aria-label="Entfernen">✕</button><span class="it-size" aria-hidden="true"></span>`;
       imageUrl(it).then(u => { const img = n.querySelector("img"); if (img && u) img.src = u; });
     } else if (it.type === "text") {
       n.style.setProperty("--ink", it.color || "#2b3a8f");
-      n.innerHTML = `<div class="tbox tbox-${it.size || "m"}"><div class="tbox-grip" title="Verschieben" aria-hidden="true"></div><div class="tbox-text" contenteditable="true" spellcheck="false" data-tbox="${it.id}" data-placeholder="Text …">${esc(it.text || "")}</div></div>
+      n.innerHTML = `<div class="tbox tbox-${SIZES.some(([z]) => z === it.size) ? it.size : "m"}"><div class="tbox-grip" title="Verschieben" aria-hidden="true"></div><div class="tbox-text" contenteditable="true" spellcheck="false" data-tbox="${esc(it.id)}" data-placeholder="Text …">${esc(it.text || "")}</div></div>
         <button type="button" class="it-del" aria-label="Textfeld entfernen">✕</button><span class="it-size" aria-hidden="true"></span>`;
     } else {
       n.style.setProperty("--note", it.color || "#ffe680");
@@ -517,7 +518,7 @@
     setPageData(pg.dataset.id, d => d.items.push(item));
     undoStack.push({ id: pg.dataset.id, undo: () => { setPageData(pg.dataset.id, d => { d.items = d.items.filter(x => x.id !== item.id); }); if (item.type === "img") delImage(item.id); } });
     layoutPage(pg);
-    const n = pg.querySelector(`[data-item="${item.id}"]`);
+    const n = pg.querySelector(`[data-item="${CSS.escape(String(item.id))}"]`);
     if (n) n.classList.add("landed");
     setTool("hand");
   }
@@ -684,7 +685,7 @@
       const y = Math.max(0, (e.clientY - r.top) / W - 0.03);
       const item = { id: uid(), type: "text", x: +x.toFixed(4), y: +y.toFixed(4), w, rot: 0, color: textColor, size: textSize, text: "" };
       addItem(pg, item, true);
-      setTimeout(() => { const t = pg.querySelector(`[data-tbox="${item.id}"]`); if (t) t.focus(); }, 60);
+      setTimeout(() => { const t = pg.querySelector(`[data-tbox="${CSS.escape(String(item.id))}"]`); if (t) t.focus(); }, 60);
     });
     el.querySelector("#hfFile").onchange = e => { openBook(); upload([...e.target.files]); e.target.value = ""; };
     el.querySelector("#hfNote").onclick = () => {
@@ -709,7 +710,7 @@
       const i = pages.findIndex(p => p.id === "frei:" + f.id);
       idx = i; renderView();
       toast("Neue Skizzenseite angelegt");
-      setTimeout(() => { const t = book.querySelector(`[data-free-title="${f.id}"]`); if (t) t.focus(); }, 200);
+      setTimeout(() => { const t = book.querySelector(`[data-free-title="${CSS.escape(String(f.id))}"]`); if (t) t.focus(); }, 200);
     };
 
     // Inhalt: Klicks
