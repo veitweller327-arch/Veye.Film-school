@@ -593,17 +593,43 @@
   };
 
   // Grafiken in Lektions-HTML einsetzen (nach der passenden Überschrift bzw. am Anfang)
+  const escA = t => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  /** HTML für ein Beispielfoto oder einen Vorher/Nachher-Vergleich (data/fotos.js). */
+  window.fotoHtml = function (g, cls = "") {
+    const cap = g.text ? `<figcaption>${escA(g.text)}</figcaption>` : "";
+    if (g.vergleich) {
+      const [vorher, nachher] = g.vergleich;
+      return `<figure class="photo-fig compare ${g.hoch ? "tall" : ""} ${cls}">
+        <div class="cmp" style="--p:50%">
+          <img src="${escA(nachher)}" alt="Nachher: ${escA(g.text)}" loading="lazy" decoding="async">
+          <img class="cmp-before" src="${escA(vorher)}" alt="Vorher" loading="lazy" decoding="async">
+          <span class="cmp-tag l">Vorher</span><span class="cmp-tag r">Nachher</span><span class="cmp-line" aria-hidden="true"></span>
+          <input type="range" min="0" max="100" value="50" aria-label="Vorher/Nachher vergleichen">
+        </div>${cap}</figure>`;
+    }
+    return `<figure class="photo-fig ${g.hoch ? "tall" : ""} ${cls}"><img src="${escA(g.src)}" alt="${escA(g.text)}" loading="lazy" decoding="async">${cap}</figure>`;
+  };
+  // Vorher/Nachher-Regler (überall, auch in Reels)
+  document.addEventListener("input", e => {
+    const r = e.target.closest && e.target.closest(".cmp input[type=range]");
+    if (r) r.parentElement.style.setProperty("--p", r.value + "%");
+  });
+
+  /** Grafiken und Fotos hinter die passende Überschrift setzen (in der Reihenfolge der Daten). */
   window.injectGrafiken = function (kursId, lesson, html) {
-    const list = window.GRAFIKEN[`${kursId}/${lesson.id}`] || [];
-    let out = html;
+    const key = `${kursId}/${lesson.id}`;
+    const list = [...(window.GRAFIKEN[key] || []), ...((window.FOTOS || {})[key] || [])];
+    const groups = new Map();
     for (const g of list) {
-      const fig = `<figure class="lesson-fig">${g.svg}${g.text ? `<figcaption>${g.text}</figcaption>` : ""}</figure>`;
-      if (g.abschnitt === lesson.titel) out = fig + out;
-      else {
-        const h = `<h3>${g.abschnitt}</h3>`;
-        const i = out.indexOf(h);
-        if (i >= 0) out = out.slice(0, i + h.length) + fig + out.slice(i + h.length);
-      }
+      const fig = g.svg ? `<figure class="lesson-fig">${g.svg}${g.text ? `<figcaption>${g.text}</figcaption>` : ""}</figure>` : window.fotoHtml(g);
+      groups.set(g.abschnitt, (groups.get(g.abschnitt) || "") + fig);
+    }
+    let out = html;
+    for (const [abschnitt, figs] of groups) {
+      if (abschnitt === lesson.titel) { out = figs + out; continue; }
+      const h = `<h3>${abschnitt}</h3>`;
+      const i = out.indexOf(h);
+      if (i >= 0) out = out.slice(0, i + h.length) + figs + out.slice(i + h.length);
     }
     return out;
   };

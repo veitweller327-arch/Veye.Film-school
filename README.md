@@ -74,6 +74,23 @@ Beim Abschließen einer Lektion legt der KI-Assistent einen Lernzettel ins Notiz
 
 `js/sync.js`: In der Claude-Webversion werden `done`, `notes`, `heft`, `srs`, `aktiv`, `praxis`, `saved`, `feedAnswers`, `videos` und die Notizheft-Bilder automatisch im privaten Speicherbereich des Claude-Kontos abgeglichen (`data/users/<id>/…`, 200-KB-Teile). Haben sich beide Seiten geändert, wird zusammengeführt (Notizen je Lektion, Karten nach letzter Antwort, Heftseiten nach Elementen). Seite „Geräte & Backup“ (`#/sync`): Status, manueller Abgleich, Backup-Datei speichern/laden (z. B. über iCloud Drive) – auch in der installierten App.
 
+## Vorlesen, Fotos & Handy-Layout
+
+- **Vorlesestimme** (`js/stimme.js`): Reels und Lektionen werden vorgelesen.
+  - Sie läuft über die Sprachausgabe des Geräts, also offline und kostenlos.
+  - Die natürlichste deutsche Stimme wird automatisch gewählt (iPhone: „Premium“/„Erweitert“, Edge: „Natural“, Chrome/Android: Google).
+  - In den Reels liest „Vorlesen“ jede Karte vor und wischt danach automatisch weiter. Bei offenen Quizfragen wartet sie auf die Antwort.
+  - Über „⋯“ lassen sich Stimme, Tempo und Auto-Weiter einstellen.
+  - Natürlichere Stimmen am iPhone: Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch, dann z. B. „Anna (Premium)“ laden.
+- **60 Beispielfotos** (`img/fotos/`, Zuordnung in `data/fotos.js`):
+  - KI-generiert mit Higgsfield, passend zu den Abschnitten der Lektionen.
+  - Erscheinen in Lektionen und Reels.
+  - Color Grading hat Vorher/Nachher-Regler.
+- **Handy-Layout:**
+  - Tab-Leiste unten (Start, Kurse, Reels, Wiederholen, Heft).
+  - Kompakte Startseite: Kurse als wischbare Reihe, Werkzeuge im 2er-Raster, Lernpfad und Mentoren einklappbar.
+  - In Lektionen sind Videos und Quellen einklappbar.
+
 ## Sicherheit
 
 - **Fremddaten gelten als nicht vertrauenswürdig.** Alles aus der Cloud-Synchronisierung oder einer Backup-Datei prüft `js/sync.js` (`clean()`), bevor es gespeichert wird:

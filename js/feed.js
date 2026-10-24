@@ -36,7 +36,7 @@
   function lessonCards(kurs, lesson) {
     const root = document.createElement("div");
     root.innerHTML = lesson.inhalt;
-    const bilder = [...((window.GRAFIKEN || {})[`${kurs.id}/${lesson.id}`] || []), ...(lesson.bilder || [])];
+    const bilder = [...((window.GRAFIKEN || {})[`${kurs.id}/${lesson.id}`] || []), ...((window.FOTOS || {})[`${kurs.id}/${lesson.id}`] || []), ...(lesson.bilder || [])];
     const cards = [];
     let heading = lesson.titel, chapter = 0, firstInSection = true;
     let buf = [], bufLen = 0;
@@ -58,8 +58,7 @@
       buf = []; bufLen = 0;
     }
     const addImage = h => {
-      const img = bilder.find(b => b.abschnitt === h);
-      if (img) push("bild", { bild: img });
+      bilder.filter(b => b.abschnitt === h).forEach(img => push("bild", { bild: img }));
     };
     addImage(lesson.titel);
 
@@ -188,6 +187,7 @@
       case "tipp":
         return `${header(c)}<div class="a reel-tip tip-${c.kind}"><div class="tip-label"><span class="tip-dot"></span>${esc(c.label || TIP_LABEL[c.kind])}</div><div class="reel-text">${c.html}</div></div>`;
       case "bild":
+        if (!c.bild.svg && window.fotoHtml) return `${header(c)}${window.fotoHtml(c.bild, "a reel-photo")}`;
         return `${header(c)}
           <figure class="a reel-figure ${c.bild.svg ? "is-svg" : ""}">${c.bild.svg ? c.bild.svg : `<img src="${esc(c.bild.src)}" alt="${esc(c.bild.alt || c.heading)}" loading="lazy">`}
           ${c.bild.text ? `<figcaption>${esc(c.bild.text)}</figcaption>` : ""}</figure>
@@ -244,7 +244,7 @@
   }
 
   const qkey = c => `${c.kurs.id}/${c.lesson.id}/${c.qi}`;
-  const cardId = c => `${c.kurs.id}/${c.lesson.id}/${c.type}/${c.heading}/${c.qi ?? ""}/${textOf(JSON.stringify([c.html, c.items, c.rows, c.steps, c.lead])).slice(0, 60)}`;
+  const cardId = c => `${c.kurs.id}/${c.lesson.id}/${c.type}/${c.heading}/${c.qi ?? ""}/${textOf(JSON.stringify([c.html, c.items, c.rows, c.steps, c.lead])).slice(0, 60)}${c.bild && !c.bild.svg ? "/" + (c.bild.src || c.bild.vergleich[1]) : ""}`;
   const isSaved = c => store.get("saved", []).some(s => s.id === cardId(c));
 
   /* ================= Vollbild-Feed ================= */
@@ -272,11 +272,20 @@
         <div class="reels-toprow">
           <button class="reels-close" aria-label="Schließen">✕</button>
           <div class="reels-title"></div>
+          ${window.Stimme && window.Stimme.available() ? `<button class="reels-voice" aria-pressed="false" aria-label="Vorlesen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w1" d="M16 9.5a3.5 3.5 0 0 1 0 5"/><path class="w2" d="M18.5 7a7 7 0 0 1 0 10"/></svg><span>Vorlesen</span></button>
+          <button class="reels-voice-set" aria-label="Stimme einstellen" hidden>⋯</button>` : ""}
           <div class="reels-count" aria-live="polite"></div>
         </div>
       </div>
       <div class="reels-scroll" tabindex="0">${cards.map((c, i) => cardHtml(c, i, cards.length, ctx)).join("")}</div>
-      <div class="reels-sheet" hidden>
+      <div class="reels-sheet voice-sheet" hidden>
+        <div class="sheet-inner">
+          <div class="sheet-grip"></div>
+          <div class="sheet-head"><strong>Vorlesen</strong><button class="reels-close vs-x" aria-label="Schließen">✕</button></div>
+          <div class="vs-body"></div>
+        </div>
+      </div>
+      <div class="reels-sheet ask-sheet" hidden>
         <div class="sheet-inner">
           <div class="sheet-grip"></div>
           <div class="sheet-head"><strong>Frag den Tutor</strong><button class="reels-close sheet-x" aria-label="Schließen">✕</button></div>
@@ -295,10 +304,50 @@
     const bar = wrap.querySelector(".reels-bar > div");
     const segs = Array.from(wrap.querySelectorAll(".reels-segs i"));
     const sections = Array.from(scroller.children);
-    const sheet = wrap.querySelector(".reels-sheet");
+    const sheet = wrap.querySelector(".ask-sheet");
     let current = start;
 
+    /* ---- Vorlesen ---- */
+    const S = window.Stimme;
+    const voiceBtn = wrap.querySelector(".reels-voice"), voiceSet = wrap.querySelector(".reels-voice-set");
+    const vSheet = wrap.querySelector(".voice-sheet");
+    let reading = false, readTimer = 0, autoTimer = 0;
+    const isOpenQuiz = i => cards[i].type === "quiz" && ctx.answers[qkey(cards[i])] === undefined;
+    // sofort = direkt im Klick sprechen (iOS erlaubt Sprache nur aus einer Nutzeraktion heraus)
+    function readCard(i, sofort) {
+      clearTimeout(readTimer); clearTimeout(autoTimer);
+      if (!reading) return;
+      const run = () => {
+        const text = S.textFrom(sections[i].querySelector(".reel-body"));
+        sections.forEach(x => x.classList.toggle("speaking", x === sections[i]));
+        S.speak(text, { onend: () => {
+          sections[i].classList.remove("speaking");
+          // Auto-Weiter, außer bei offenen Quizfragen und am Ende
+          if (reading && S.prefs().auto && current === i && !isOpenQuiz(i) && i < sections.length - 1 && cards[i].type !== "ende")
+            autoTimer = setTimeout(() => { if (reading && current === i) go(1); }, 900);
+        } });
+      };
+      if (sofort) run(); else readTimer = setTimeout(run, 350);
+    }
+    function setReading(on) {
+      reading = on && !!(S && S.available());
+      if (voiceBtn) { voiceBtn.setAttribute("aria-pressed", reading); voiceBtn.classList.toggle("on", reading); voiceSet.hidden = !reading; }
+      if (reading) readCard(current, true); else { clearTimeout(readTimer); clearTimeout(autoTimer); S && S.stop(); sections.forEach(x => x.classList.remove("speaking")); }
+      store.set("reelVoice", reading);
+    }
+    if (voiceBtn) {
+      voiceBtn.onclick = () => setReading(!reading);
+      voiceSet.onclick = () => {
+        const b = vSheet.querySelector(".vs-body"); b.innerHTML = S.settingsHtml({ auto: true }); S.bindSettings(b);
+        vSheet.hidden = false;
+      };
+      if (store.get("reelVoice", false)) setReading(true);
+      vSheet.querySelector(".vs-x").onclick = () => { vSheet.hidden = true; if (reading) readCard(current); };
+      vSheet.addEventListener("click", e => { if (e.target === vSheet) { vSheet.hidden = true; if (reading) readCard(current); } });
+    }
+
     function setCurrent(i) {
+      const changed = i !== current;
       current = i;
       store.set(progressKey, i);
       const c = cards[i];
@@ -306,6 +355,7 @@
       count.textContent = `${i + 1} / ${cards.length}`;
       if (bar) bar.style.width = `${((i + 1) / cards.length) * 100}%`;
       segs.forEach((s, k) => { s.className = k < i ? "done" : k === i ? "now" : ""; });
+      if (changed && reading) readCard(i);
       // Abschlusskarte mit aktuellem Quizstand neu aufbauen
       if (c.type === "ende") {
         const body = sections[i].querySelector(".reel-body");
@@ -340,6 +390,7 @@
 
     function onKey(e) {
       if (!sheet.hidden) { if (e.key === "Escape") closeSheet(); return; }
+      if (vSheet && !vSheet.hidden) { if (e.key === "Escape") vSheet.hidden = true; return; }
       if (["ArrowDown", "PageDown", "j"].includes(e.key) || (e.key === " " && !e.shiftKey)) { e.preventDefault(); go(1); }
       else if (["ArrowUp", "PageUp", "k"].includes(e.key) || (e.key === " " && e.shiftKey)) { e.preventDefault(); go(-1); }
       else if (e.key === "Escape") close();
@@ -362,6 +413,7 @@
         fb.innerHTML = feedbackHtml(c, ai); fb.hidden = false;
         fb.classList.add(ai === c.q.richtig ? "ok" : "bad");
         sec.classList.add(ai === c.q.richtig ? "pop-ok" : "pop-bad");
+        if (reading) S.speak(S.textFrom(fb), { onend: () => { if (reading && S.prefs().auto && current === +sec.dataset.i) autoTimer = setTimeout(() => go(1), 1200); } });
         return;
       }
       const btn = e.target.closest("[data-act]");
@@ -423,6 +475,7 @@
 
     function close() {
       io.disconnect();
+      clearTimeout(readTimer); clearTimeout(autoTimer); if (S) S.stop();
       document.removeEventListener("keydown", onKey);
       openFeed = null;
       const done = () => {

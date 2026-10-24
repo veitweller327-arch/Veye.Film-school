@@ -128,7 +128,7 @@
     const p = progress(k);
     return `
       <a class="course k-${k.id}" href="#/kurs/${k.id}">
-        <div class="course-frame"><span class="course-tc">${pad2(k.lektionen.length)} LEKTIONEN</span><span class="course-no">${pad2(i + 1)}</span></div>
+        <div class="course-frame">${(window.KURS_FOTOS || {})[k.id] ? `<img class="course-img" src="${(window.KURS_FOTOS || {})[k.id]}" alt="" loading="lazy" decoding="async">` : ""}<span class="course-tc">${pad2(k.lektionen.length)} LEKTIONEN</span><span class="course-no">${pad2(i + 1)}</span></div>
         <div class="course-body">
           <h3>${esc(k.titel)}</h3>
           <p>${esc(k.beschreibung)}</p>
@@ -147,18 +147,20 @@
     const nx = nextLesson();
     const headAt = nx ? lessons.findIndex(x => x === nx || (x.k === nx.k && x.l === nx.l)) : total - 1;
     const grafiken = Object.values(window.GRAFIKEN || {}).reduce((a, l) => a + l.length, 0);
+    const fotos = Object.values(window.FOTOS || {}).reduce((a, l) => a + l.reduce((b, f) => b + (f.vergleich ? 2 : 1), 0), 0);
     const vids = allVideos();
     return `
       <section class="hero-cine bleed">
         <div class="hero-frame hero-bars">
           <div class="hero-light"></div>
+          <img class="hero-photo" src="img/fotos/32.webp" alt="" decoding="async">
           <div class="hero-inner">
-            <div class="hero-meta rise"><span>${KURSE.length} Kurse</span><span>${total} Lektionen</span><span>${grafiken} Grafiken</span></div>
+            <div class="hero-meta rise"><span>${KURSE.length} Kurse</span><span>${total} Lektionen</span><span>${grafiken + fotos} Bilder</span></div>
             <h1 class="rise">Lerne Film wie an der <em>Filmhochschule.</em></h1>
             <p class="lead rise">Bildsprache, Kamera, Licht und Schnitt. Color Grading von den Scopes bis zum eigenen Look. Und alles angewendet auf Reels in der Edits-App.</p>
             <div class="hero-cta rise">
               ${nx ? `<a class="btn primary big" href="#/lektion/${nx.k.id}/${nx.l.id}">▶ ${fertig ? "Weiterlernen" : "Erste Lektion starten"}</a>` : `<a class="btn primary big" href="#/training">Wiederholen im Training</a>`}
-              <a class="btn big" href="#/feed">Lern-Feed öffnen</a>
+              <a class="btn big" href="#/feed">Reels ansehen</a>
             </div>
           </div>
         </div>
@@ -175,31 +177,31 @@
       ${window.Lernen ? window.Lernen.todayHtml(nx) : ""}
       ${installHint()}
 
-      <div class="sec-head"><h2>Kurse</h2><span class="label">${KURSE.length} Kurse · ${total} Lektionen</span></div>
-      <div class="course-grid">${KURSE.map(courseCard).join("")}</div>
+      <div class="sec-head"><h2>Kurse</h2><a class="label link" href="#/kurse">Alle ${total} Lektionen →</a></div>
+      <div class="course-grid swipe-row">${KURSE.map(courseCard).join("")}</div>
 
       <div class="sec-head"><h2>Werkzeuge</h2><span class="label">Üben & nachschlagen</span></div>
       <div class="tools">
-        <a class="tool" href="#/feed"><b>Lern-Feed</b><span>Alle Lektionen als Reels zum Wischen.</span></a>
-        <a class="tool" href="#/training"><b>Wiederholen</b><span>Spaced Repetition: Karten kommen wieder, bevor du sie vergisst.</span></a>
-        <a class="tool" href="#/labor"><b>Grading-Labor</b><span>Eigene Bilder graden, Scopes live lesen.</span></a>
-        <a class="tool" href="#/labor?breakdown=1"><b>Breakdown</b><span>Filmbilder analysieren, dann auflösen lassen.</span></a>
-        <a class="tool" href="#/videos"><b>Mediathek</b><span>${vids.length} Videos, Lektionen zugeordnet.</span></a>
-        <a class="tool" href="#/glossar"><b>Glossar</b><span>${(window.GLOSSAR || []).length} Fachbegriffe von ACES bis Whip Pan.</span></a>
+        ${[["#/feed", "Lern-Feed", "Alle Lektionen als Reels – auch zum Zuhören.", "reel"],
+           ["#/training", "Wiederholen", "Karten kommen wieder, bevor du sie vergisst.", "loop"],
+           ["#/labor", "Grading-Labor", "Eigene Bilder graden, Scopes live lesen.", "wheel"],
+           ["#/labor?breakdown=1", "Breakdown", "Filmbilder analysieren, dann auflösen.", "frame"],
+           ["#/videos", "Mediathek", `${vids.length} Videos, Lektionen zugeordnet.`, "play"],
+           ["#/glossar", "Glossar", `${(window.GLOSSAR || []).length} Fachbegriffe von ACES bis Whip Pan.`, "book"]]
+          .map(([href, t, d, ic]) => `<a class="tool" href="${href}"><i class="tool-ic ic-${ic}" aria-hidden="true"></i><b>${t}</b><span>${d}</span></a>`).join("")}
       </div>
 
-      ${CREATORS.length ? `
-      <div class="sec-head"><h2>Mentoren</h2><span class="label">Inhalte orientiert an</span></div>
-      <div class="mentors">${CREATORS.map(creatorCard).join("")}</div>` : ""}
-
-      <div class="sec-head"><h2>Lernpfad</h2><span class="label">Empfehlung · 6 Wochen +</span></div>
-      <ol class="path">
-        <li><span class="label">Woche 1–2</span><p>Filmstudium-Basics: Einstellungsgrößen, Kamera, Licht. Jede Übung praktisch umsetzen.</p></li>
-        <li><span class="label">Woche 3</span><p>Color Grading Basis: Korrektur, Scopes, Primaries – dazu das Grading-Labor.</p></li>
-        <li><span class="label">Woche 4</span><p>Edits: Setup, Hook, Beat-Sync. Erstes Reel veröffentlichen.</p></li>
-        <li><span class="label">Woche 5–6</span><p>Vertiefung: Commercial-Licht, False Color, Schnitttheorie, Log, Looks.</p></li>
-        <li><span class="label">Danach</span><p>Kinetic Editing, Sounddesign, Effekte – und jede Woche ein Reel.</p></li>
-      </ol>`;
+      <details class="fold">
+        <summary><h2>Lernpfad & Mentoren</h2><span class="label">Empfehlung · 6 Wochen +</span></summary>
+        <ol class="path">
+          <li><span class="label">Woche 1–2</span><p>Filmstudium-Basics: Einstellungsgrößen, Kamera, Licht. Jede Übung praktisch umsetzen.</p></li>
+          <li><span class="label">Woche 3</span><p>Color Grading Basis: Korrektur, Scopes, Primaries – dazu das Grading-Labor.</p></li>
+          <li><span class="label">Woche 4</span><p>Edits: Setup, Hook, Beat-Sync. Erstes Reel veröffentlichen.</p></li>
+          <li><span class="label">Woche 5–6</span><p>Vertiefung: Commercial-Licht, False Color, Schnitttheorie, Log, Looks.</p></li>
+          <li><span class="label">Danach</span><p>Kinetic Editing, Sounddesign, Effekte – und jede Woche ein Reel.</p></li>
+        </ol>
+        ${CREATORS.length ? `<div class="mentors">${CREATORS.map(creatorCard).join("")}</div>` : ""}
+      </details>`;
   }
 
   /* ---------------- Als App installieren (nur in der gehosteten Version mit Manifest) ---------------- */
@@ -348,20 +350,27 @@
             <button class="mode-tab" data-mode="tutor" role="tab" hidden>KI-Tutor</button>
             <button class="mode-tab" data-mode="lesen" role="tab">Ganze Lektion</button>
           </div>
-          <button class="reels-cta" id="reelsBtn"><span class="play">▶</span><span><strong>Als Reels</strong><small>wischen</small></span></button>
+          <div class="lesson-ctas">
+            <button class="reels-cta" id="reelsBtn"><span class="play">▶</span><span><strong>Als Reels</strong><small>wischen</small></span></button>
+            ${window.Stimme && window.Stimme.available() ? `<button class="voice-cta" id="voiceBtn" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w1" d="M16 9.5a3.5 3.5 0 0 1 0 5"/><path class="w2" d="M18.5 7a7 7 0 0 1 0 10"/></svg><span><strong>Vorlesen</strong><small>zuhören</small></span></button>` : ""}
+          </div>
         </div>
         <div id="modeRoot"></div>
 
         ${window.Praxis ? window.Praxis.section(k, l) : ""}
 
-        <div class="sec-head"><h2>Videos</h2><span class="label">${vids.length ? pad2(vids.length) + " zugeordnet" : "Mediathek"}</span></div>
-        ${vids.length
-          ? `<div class="grid">${vids.map(v => videoCard(v)).join("")}</div>`
-          : `<p class="muted">Noch keine Videos zugeordnet. <a href="#/videos?kurs=${k.id}&lektion=${l.id}">Video hinzufügen →</a></p>`}
+        <details class="fold" ${vids.length ? "open" : ""}>
+          <summary><h2>Videos</h2><span class="label">${vids.length ? pad2(vids.length) + " zugeordnet" : "Mediathek"}</span></summary>
+          ${vids.length
+            ? `<div class="grid">${vids.map(v => videoCard(v)).join("")}</div>`
+            : `<p class="muted">Noch keine Videos zugeordnet. <a href="#/videos?kurs=${k.id}&lektion=${l.id}">Video hinzufügen →</a></p>`}
+        </details>
 
         ${l.quellen?.length ? `
-          <div class="sec-head"><h2>Quellen</h2><span class="label">${pad2(l.quellen.length)} Links</span></div>
-          <ul class="sources">${l.quellen.map(q => `<li><a href="${esc(q.url)}" target="_blank" rel="noopener">${esc(q.titel)}</a></li>`).join("")}</ul>` : ""}
+          <details class="fold">
+            <summary><h2>Quellen</h2><span class="label">${pad2(l.quellen.length)} Links</span></summary>
+            <ul class="sources">${l.quellen.map(q => `<li><a href="${esc(q.url)}" target="_blank" rel="noopener">${esc(q.titel)}</a></li>`).join("")}</ul>
+          </details>` : ""}
 
         <div class="lesson-foot">
           <button class="btn ${erledigt ? "" : "primary"} big" id="doneBtn">${erledigt ? "✓ Abgeschlossen – rückgängig" : "Lektion abschließen"}</button>
@@ -374,6 +383,27 @@
   }
 
   // Lernmodi einer Lektion: Schritt für Schritt / KI-Tutor / ganze Lektion lesen
+  /* Vorlesen auf der Lektionsseite: liest den aktuellen Schritt (oder die ganze Lektion) und
+     beim Weiterblättern automatisch den nächsten. Nach einer Quizantwort nur das Neue. */
+  function bindLessonVoice(root) {
+    const btn = document.getElementById("voiceBtn"), S = window.Stimme;
+    if (!btn || !S) return;
+    let on = false, last = "";
+    const target = () => root.querySelector(".step-card") || root;
+    const read = () => {
+      const t = S.textFrom(target());
+      const neu = last && t.startsWith(last.slice(0, 80)) && t.length > last.length ? t.slice(last.length) : t;
+      if (t === last) return;
+      last = t;
+      S.speak(neu, { onend: () => btn.classList.remove("talking") });
+      btn.classList.add("talking");
+    };
+    const set = v => { on = v; btn.classList.toggle("on", on); btn.setAttribute("aria-pressed", on); if (on) { last = ""; read(); } else { S.stop(); btn.classList.remove("talking"); } };
+    btn.onclick = () => set(!on);
+    let deb = 0;
+    new MutationObserver(() => { if (!on) return; clearTimeout(deb); deb = setTimeout(read, 250); }).observe(root, { childList: true });
+  }
+
   function bindLessonModes(k, l) {
     const root = document.getElementById("modeRoot");
     const tabs = document.querySelectorAll(".mode-tab");
@@ -399,6 +429,7 @@
       }
     }
     tabs.forEach(t => t.onclick = () => show(t.dataset.mode));
+    bindLessonVoice(root);
     const idx = k.lektionen.indexOf(l);
     document.getElementById("reelsBtn").onclick = () => window.Feed.openLesson(k, l, {
       isDone, nextLesson: k.lektionen[idx + 1],
@@ -615,6 +646,7 @@
 
   /* ---------------- Router ---------------- */
   function route() {
+    if (window.Stimme) window.Stimme.stop();
     const hash = location.hash.replace(/^#/, "") || "/";
     const [path, qs] = hash.split("?");
     const query = Object.fromEntries(new URLSearchParams(qs || ""));
@@ -662,6 +694,7 @@
 
     // aktiven Menüpunkt markieren
     const section = ["kurs", "lektion"].includes(parts[0]) ? "kurse" : parts[0] || "";
+    document.querySelectorAll("#tabbar a").forEach(a => a.classList.toggle("active", a.dataset.sec.split(" ").includes(section)));
     document.querySelectorAll("#nav a").forEach(a => {
       a.classList.toggle("active", a.getAttribute("href").replace(/^#\//, "") === section);
     });
@@ -686,6 +719,7 @@
     if (window.Notes) window.Notes.updateBadge();
     const a = document.activeElement;
     const typing = a && (a.isContentEditable || /INPUT|TEXTAREA|SELECT/.test(a.tagName));
+    if (window.Stimme && window.Stimme.speaking()) return; // Vorlesen nicht unterbrechen
     if (!typing && !document.querySelector(".reels") && !/^#\/(notizheft|sync)/.test(location.hash)) route();
   });
   if (window.Sync) {
