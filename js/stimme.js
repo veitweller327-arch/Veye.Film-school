@@ -9,7 +9,7 @@
   const KEY = "veye:stimme";
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } };
   const save = p => { try { localStorage.setItem(KEY, JSON.stringify(p)); } catch { /* egal */ } };
-  let prefs = { rate: 1, auto: true, ...load() };
+  let prefs = { rate: 0.95, auto: true, ...load() };
   let queue = [], current = null, runId = 0;
   const listeners = new Set();
   const emit = () => listeners.forEach(f => { try { f(); } catch { /* egal */ } });
@@ -27,6 +27,9 @@
     if (/google/.test(n)) s += 30;
     if (/online/.test(n)) s += 10;
     if (/compact|espeak|kompakt/.test(n)) s -= 40;
+    // bekannt angenehme deutsche Stimmen (iOS/macOS Premium, Microsoft Natural, Google)
+    if (/\b(anna|helena|petra|martin|markus|yannick|katja|seraphina|amala|florian|conrad|killian|vicki)\b/.test(n)) s += 12;
+    if (/multilingual/.test(n)) s += 4;
     if (/^de[-_]de/i.test(v.lang)) s += 8; else if (/^de/i.test(v.lang)) s += 4;
     return s;
   }
@@ -40,13 +43,28 @@
   }
   if (available()) synth.addEventListener?.("voiceschanged", emit);
 
-  /** Text aus einem Element holen und fürs Vorlesen glätten. */
+  /** Text aus einem Element holen und fürs Vorlesen glätten – so, wie ein Mensch es vorlesen würde. */
   function textFrom(el) {
     if (!el) return "";
     const c = el.cloneNode(true);
-    c.querySelectorAll("svg, .swipe-hint, .reel-actions, .reel-credit, [hidden], .cmp-tag, .opt, button.btn, input, .tt, .reel-rail, script, style, .tag, .label, .eyebrow, .reel-kicker + .reel-kicker").forEach(n => n.remove());
+    // Was man sieht, aber nicht vorliest: wiederholte Kapitelzeile, Nummern, Statistik, Bedienelemente
+    c.querySelectorAll("svg, .swipe-hint, .reel-actions, .reel-credit, [hidden], .cmp-tag, .opt, button.btn, input, .tt, .reel-rail, script, style, .tag, .label, .eyebrow, .reel-kicker, .chap-nr, .kick-nr, .cover-stats, .cover-tags, .pill, .reel-note, .ring, .spec-head, .step-nr").forEach(n => n.remove());
+    // Quiz: „Frage? Totale, Halbnah, Detail oder Amerikanische?“
+    const ch = [...c.querySelectorAll(".reel-choice, .choice")];
+    if (ch.length) {
+      const names = ch.map(b => b.textContent.trim()).filter(Boolean);
+      const list = document.createElement("p");
+      list.textContent = names.length > 1 ? names.slice(0, -1).join(", ") + " oder " + names[names.length - 1] + "?" : names.join("");
+      ch[0].parentElement.replaceWith(list);
+    }
+    // Tabellen-Karten: „Begriff: Wert.“ statt „Begriff. Wert.“
+    c.querySelectorAll("dt, .spec-k").forEach(n => n.append(": "));
+    c.querySelectorAll("dd, .spec-v").forEach(n => n.append(". "));
+    c.querySelectorAll(".rc-title").forEach(n => n.append(". "));
+    c.querySelectorAll(".quiz-badge, .tip-label").forEach(n => n.append(". "));
     c.querySelectorAll("*").forEach(n => n.append(" "));
-    c.querySelectorAll("li, p, h1, h2, h3, h4, dt, dd, figcaption, .spec-row, tr, .reel-choice").forEach(n => n.append(". "));
+    c.querySelectorAll("li, p, h1, h2, h3, h4, figcaption, tr, .term-name, .reel-statement").forEach(n => n.append(". "));
+    c.querySelectorAll(".term-name").forEach(n => n.prepend(" "));
     return clean(c.textContent);
   }
   function clean(t) {
@@ -57,7 +75,8 @@
       .replace(/(\d)\s?°/g, "$1 Grad").replace(/(\d)\s?K\b/g, "$1 Kelvin").replace(/\bfps\b/g, "Bilder pro Sekunde")
       .replace(/(\d)\s?mm\b/g, "$1 Millimeter").replace(/\bLUTs?\b/g, m => m.replace("LUT", "Lutt"))
       .replace(/(\d+):(\d+)/g, "$1 zu $2").replace(/(\d)\s*[–-]\s*(\d)/g, "$1 bis $2").replace(/\s*[–—]\s*/g, ", ")
-      .replace(/:\s*\./g, ":")
+      .replace(/:\s*\./g, ":").replace(/([?!])\s*\./g, "$1").replace(/:\s*:/g, ":")
+      .replace(/([?!])\s*:/g, "$1").replace(/\s+\//g, " oder").replace(/\/\s+/g, " ").replace(/\s*&\s*/g, " und ").replace(/\s+\./g, ".")
       .replace(/\s*\.\s*(\.\s*)+/g, ". ").replace(/\s+/g, " ").trim();
   }
   // In Sätze bis ~220 Zeichen teilen
@@ -91,7 +110,7 @@
       const v = voice();
       if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "de-DE";
       u.rate = prefs.rate; u.pitch = 1;
-      u.onend = () => next();
+      u.onend = () => setTimeout(next, queue.length ? 220 : 0);
       u.onerror = e => { if (id === runId && e.error !== "interrupted" && e.error !== "canceled") next(); };
       current = u; emit();
       synth.speak(u);

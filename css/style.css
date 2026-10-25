@@ -1479,3 +1479,17 @@ code { color: var(--text); }
 .tag.vertiefung { color: color-mix(in srgb, var(--color) 75%, var(--text)); }
 .tag.praxis { color: color-mix(in srgb, var(--edits) 75%, var(--text)); }
 .footer a { display: inline-flex; align-items: center; min-height: 44px; }
+
+/* ---------- Wisch-Geste „Zurück“ ---------- */
+.swiping { transition: none !important; will-change: transform; }
+#app.swiping, .reels.swiping, .notes-panel.swiping { box-shadow: -18px 0 40px rgba(0, 0, 0, .12); }
+.swipe-out { transition: transform .2s cubic-bezier(.4, 0, 1, 1), opacity .2s !important; }
+#app.swipe-in { animation: swipeIn .38s var(--spring); }
+@keyframes swipeIn { from { transform: translate3d(-28%, 0, 0); opacity: .4; } }
+.back-hint { position: fixed; z-index: 500; left: 10px; top: 50%; width: 40px; height: 40px; margin-top: -20px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--glass); border: .5px solid var(--glass-line); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: var(--shadow); color: var(--tint); pointer-events: none; opacity: 0; transform: scale(calc(.6 + .4 * var(--p, 0))); transition: opacity .15s; }
+.back-hint.on { opacity: calc(.3 + .7 * var(--p, 0)); }
+.back-hint svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+@media (prefers-reduced-motion: reduce) { #app.swipe-in { animation: none; } }
+html, body { overscroll-behavior-x: none; } /* Browser-Wischnavigation aus – die App-Geste übernimmt */
