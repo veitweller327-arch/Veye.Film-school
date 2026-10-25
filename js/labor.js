@@ -324,7 +324,7 @@
       const h = document.createElement("h4"); h.textContent = group; sliderBox.appendChild(h);
       list.forEach(([key, label, min, max, step]) => {
         const row = document.createElement("div"); row.className = "slider";
-        row.innerHTML = `<span>${label}</span><input type="range" min="${min}" max="${max}" step="${step}"><output></output>`;
+        row.innerHTML = `<span>${label}</span><input type="range" min="${min}" max="${max}" step="${step}" aria-label="${label}"><output></output>`;
         const inp = row.querySelector("input"), out = row.querySelector("output");
         inp.value = params[key];
         inp.oninput = () => { params[key] = parseFloat(inp.value); out.textContent = fmt(params[key]); render(); };

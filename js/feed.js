@@ -222,13 +222,18 @@
     return "";
   }
 
+  const ICO = {
+    save: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
+    ask: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M10 9.2a2 2 0 1 1 2.6 1.9c-.4.2-.6.5-.6.9v.4M12 14h.01"/></svg>',
+    open: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>'
+  };
   function cardHtml(c, i, total, ctx) {
     const saved = isSaved(c);
     const rail = c.type === "cover" || c.type === "ende" ? "" : `
       <div class="reel-rail">
-        <button class="rail-btn ${saved ? "on" : ""}" data-act="save" aria-label="Merken" aria-pressed="${saved}"><span class="ico">${saved ? "★" : "☆"}</span><span>Merken</span></button>
-        ${ctx.ai ? `<button class="rail-btn" data-act="ask" aria-label="Tutor fragen"><span class="ico">?</span><span>Fragen</span></button>` : ""}
-        <a class="rail-btn" href="#/lektion/${c.kurs.id}/${c.lesson.id}" data-act="open" aria-label="Lektion öffnen"><span class="ico">↗</span><span>Lektion</span></a>
+        <button class="rail-btn ${saved ? "on" : ""}" data-act="save" aria-label="Merken" aria-pressed="${saved}"><span class="ico">${ICO.save}</span><span>Merken</span></button>
+        ${ctx.ai ? `<button class="rail-btn" data-act="ask" aria-label="Tutor fragen"><span class="ico">${ICO.ask}</span><span>Fragen</span></button>` : ""}
+        <a class="rail-btn" href="#/lektion/${c.kurs.id}/${c.lesson.id}" data-act="open" aria-label="Lektion öffnen"><span class="ico">${ICO.open}</span><span>Lektion</span></a>
       </div>`;
     const layout = ["l1", "l2", "l3", "l4"][i % 4];
     return `<section class="reel reel-${c.type} theme-${c.kurs.id} ${layout}" data-i="${i}" data-notes-k="${c.kurs.id}" data-notes-l="${c.lesson.id}" data-notes-src="Reels · markiert">
@@ -438,7 +443,6 @@
         }
         btn.classList.toggle("on", idx < 0);
         btn.setAttribute("aria-pressed", idx < 0);
-        btn.querySelector(".ico").textContent = idx < 0 ? "★" : "☆";
       } else if (act === "ask") {
         openSheet(c);
       } else if (act === "open" || act === "next") {
@@ -463,6 +467,16 @@
       setTimeout(() => wrap.querySelector("#reelAsk").focus(), 60);
     }
     function closeSheet() { sheet.hidden = true; }
+    // Sheets nach unten wegwischen (zusätzlich zu ✕ und Tippen daneben)
+    [sheet, wrap.querySelector(".voice-sheet")].forEach(sh => {
+      const inner = sh.querySelector(".sheet-inner"); let y0 = null, dy = 0;
+      inner.addEventListener("touchstart", e => { if (inner.scrollTop > 0) return; y0 = e.touches[0].clientY; dy = 0; inner.classList.add("dragging"); }, { passive: true });
+      inner.addEventListener("touchmove", e => { if (y0 == null) return; dy = Math.max(0, e.touches[0].clientY - y0); inner.style.transform = `translateY(${dy}px)`; }, { passive: true });
+      inner.addEventListener("touchend", () => {
+        if (y0 == null) return; inner.classList.remove("dragging"); inner.style.transform = ""; y0 = null;
+        if (dy > 90) { sh.hidden = true; if (sh !== sheet && reading) readCard(current); }
+      });
+    });
     wrap.querySelector(".sheet-x").onclick = closeSheet;
     sheet.addEventListener("click", e => { if (e.target === sheet) closeSheet(); });
     const askNow = () => {

@@ -3,6 +3,7 @@
  * Routen: #/  #/kurs/:id  #/lektion/:kurs/:lektion  #/videos  #/labor  #/glossar
  */
 (function () {
+  document.documentElement.lang = "de"; // Silbentrennung & richtige Aussprache für Screenreader
   const app = document.getElementById("app");
   const KURSE = window.KURSE || [];
 
@@ -304,7 +305,7 @@
       <section class="course-head bleed k-${k.id}">
         <div class="course-frame"></div>
         <div class="course-head-in">
-          <div class="crumbs"><a href="#/">Start</a><span>/</span><a href="#/kurse">Kurse</a><span>/</span>Kurs ${pad2(no)}</div>
+          <div class="crumbs"><a href="#/">Start</a><span aria-hidden="true">/</span><a href="#/kurse">Kurse</a><span aria-hidden="true">/</span>Kurs ${pad2(no)}</div>
           <h1>${esc(k.titel)}</h1>
           <p class="lead">${esc(k.beschreibung)}</p>
           <div class="progress"><div style="width:${p.pct}%"></div></div>
@@ -319,7 +320,7 @@
               <span class="edl-no">${pad2(i + 1)}</span>
               <span class="edl-title">${esc(l.titel)}<small>${(m => m === null ? "" : `${m} % sicher · `)(window.Lernen ? window.Lernen.mastery(k.id, l.id) : null)}${window.Feed.lessonCards(k, l).length} Karten · ${(l.quiz || []).length} Fragen${(window.GRAFIKEN || {})[k.id + "/" + l.id] ? ` · ${window.GRAFIKEN[k.id + "/" + l.id].length} Grafiken` : ""}</small></span>
               ${levelTag(l.level)}
-              <span class="edl-state">✓</span>
+              <span class="edl-state" aria-hidden="true">✓</span>
             </a>
           </li>`).join("")}
       </ul>`;
@@ -336,7 +337,7 @@
     return `
       <article class="lesson k-${k.id}" data-notes-k="${k.id}" data-notes-l="${l.id}">
         <header class="lesson-head">
-          <div class="crumbs"><a href="#/">Start</a><span>/</span><a href="#/kurs/${k.id}">${esc(k.titel)}</a><span>/</span>Lektion ${pad2(idx + 1)}</div>
+          <div class="crumbs"><a href="#/">Start</a><span aria-hidden="true">/</span><a href="#/kurs/${k.id}">${esc(k.titel)}</a><span aria-hidden="true">/</span>Lektion ${pad2(idx + 1)}</div>
           <h1>${esc(l.titel)}</h1>
           <div class="lesson-meta">${levelTag(l.level)}<span class="label">${window.Feed.lessonCards(k, l).length} Karten · ${(l.quiz || []).length} Fragen</span>${erledigt ? `<span class="label acc">✓ abgeschlossen</span>` : ""}
             ${(m => m === null ? "" : `<a class="mastery-pill" href="#/training?k=${k.id}&l=${l.id}" title="Sicherheit aus deinen Quizantworten – antippen zum Auffrischen"><i style="--m:${m}%"></i>${m} % sicher</a>`)(window.Lernen ? window.Lernen.mastery(k.id, l.id) : null)}</div>

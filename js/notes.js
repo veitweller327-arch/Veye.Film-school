@@ -40,7 +40,7 @@
     n.updated = Date.now();
     save(d);
     updateBadge(true);
-    toast(`Im Notizheft unter „${info[key].lesson.titel}“`, () => open(key));
+    toast(`In deinen Notizen unter „${info[key].lesson.titel}“`, () => open(key));
     if (isOpen) render(key);
   }
   function removeRef(ref) {
@@ -54,21 +54,21 @@
   const tab = document.createElement("button");
   tab.className = "notes-tab";
   tab.type = "button";
-  tab.setAttribute("aria-label", "Notizheft öffnen");
-  tab.innerHTML = `<span>Notizheft</span><b class="notes-count"></b>`;
+  tab.setAttribute("aria-label", "Notizen öffnen");
+  tab.innerHTML = `<span>Notizen</span><b class="notes-count"></b>`;
   document.body.appendChild(tab);
 
   const panel = document.createElement("aside");
   panel.className = "notes-panel";
-  panel.setAttribute("aria-label", "Notizheft");
+  panel.setAttribute("aria-label", "Notizen");
   panel.hidden = true;
   panel.innerHTML = `
     <div class="np-head">
-      <div><span class="label acc">Notizheft</span><div class="np-meta" id="npMeta"></div></div>
+      <div><span class="label acc">Notizen</span><div class="np-meta" id="npMeta"></div></div>
       <div class="np-actions">
         <a class="btn small" href="#/notizheft" id="npBook">Als Heft</a>
         <button class="btn small" type="button" id="npCopy">Kopieren</button>
-        <button class="np-close" type="button" aria-label="Notizheft schließen">✕</button>
+        <button class="np-close" type="button" aria-label="Notizen schließen">✕</button>
       </div>
     </div>
     <div class="np-body" id="npBody"></div>
@@ -85,7 +85,7 @@
   selBtn.className = "sel-note";
   selBtn.type = "button";
   selBtn.hidden = true;
-  selBtn.innerHTML = `<span>＋</span> In Notizheft`;
+  selBtn.innerHTML = `<span>＋</span> Notiz`;
   document.body.appendChild(selBtn);
 
   function updateBadge(bump) {
@@ -215,7 +215,7 @@ ${eigene || "keine"}`;
     if (!useAi) {
       storeSummary(key, autoSummary(key));
       updateBadge(true);
-      if (!quiet) toast(`Lernzettel für „${info[key].lesson.titel}“ im Notizheft`, () => open(key));
+      if (!quiet) toast(`Lernzettel für „${info[key].lesson.titel}“ in deinen Notizen`, () => open(key));
       if (isOpen) render();
       return;
     }
@@ -312,8 +312,8 @@ ${eigene || "keine"}`;
     body.innerHTML = list.length
       ? hint + list.map(k => sectionHtml(k, d[k], k === ctxKey)).join("")
       : `<div class="np-empty">
-          <p class="np-empty-title">Dein Notizheft ist noch leer.</p>
-          <p>Markiere Text in einer Lektion und tippe auf <b>＋ In Notizheft</b>, oder tippe in den Reels auf <b>☆ Merken</b>. Jeder Eintrag landet automatisch unter der passenden Lektion.</p>
+          <p class="np-empty-title">Noch keine Notizen.</p>
+          <p>Markiere Text in einer Lektion und tippe auf <b>＋ Notiz</b>, oder tippe in den Reels auf <b>Merken</b>. Jeder Eintrag landet automatisch unter der passenden Lektion.</p>
           <a class="btn small" href="#/kurse">Zu den Kursen</a>
         </div>` + hint;
     body.querySelectorAll("textarea").forEach(autosize);
