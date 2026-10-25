@@ -72,3 +72,32 @@ Angewendet: [apple-design-skill](https://github.com/dickwu/apple-design-skill). 
 - Kein echtes iPhone. VoiceOver, „Fetter Text“ und die Stimme wurden nicht am Gerät gehört.
 - Die Web-App folgt nicht der iOS-Einstellung „Größerer Text“ (Dynamic Type), nur Zoom und Textgröße des Browsers. Getestet wurde 200 % per Zoom-Simulation.
 - Kontrast auf Fotos und Verläufen lässt sich nicht automatisch messen. Dort sorgen Abdunklung und Textschatten für Lesbarkeit, geprüft per Augenschein.
+
+## Überarbeitung: Apple-Stil (Oktober 2026)
+
+- **Schrift:** System-Schrift (SF Pro auf Apple-Geräten) mit iOS-Textstilen:
+  - Large Title 34–48 pt, Titel 22/20 pt, Fließtext 17 pt, Fußnoten 13 pt.
+  - Keine Großbuchstaben-Labels und keine Monospace-Etiketten mehr.
+  - Google Fonts lädt nur noch die zwei Handschriften fürs Notizheft.
+- **Hell und Dunkel nach Systemeinstellung** (`dark-mode.md`). Die Reels bleiben als Medienansicht immer dunkel.
+- **Farben:**
+  - Apple-Systemgrau, Blau als einziger Bedienakzent.
+  - Kursfarben Blau/Orange/Pink, geprüft für alle drei Formen der Farbenblindheit (Simulation nach Machado 2009, Farbabstand ΔE ≥ 20). Sie erscheinen nie ohne Text.
+  - Richtig/Falsch in Blau und Rot-Orange mit ✓/✗ statt Grün/Rot.
+
+  | Kontrast | Hell | Dunkel |
+  | --- | --- | --- |
+  | Text | 16,8:1 | 19,3:1 |
+  | Sekundärtext | 5,1:1 | 5,9:1 |
+  | Links | 6,1:1 | 6,8:1 |
+
+- **Layout:**
+  - Startseite wie der App-Store-Tab „Heute“, mit Datum, großem Titel und Fotokarte zum Weiterlernen.
+  - Fortschritt je Kurs als ruhige Balken.
+  - Werkzeuge als gruppierte Liste mit Symbol-Kacheln wie in den iOS-Einstellungen.
+  - Lektionslisten als Inset-Gruppen.
+- **Liquid Glass** nur auf der schwebenden Ebene (`liquid-glass.md`): Kopfzeile, Tab-Leiste als Kapsel, Tooltips, Hinweise, Notizheft-Werkzeuge.
+- **Messung nachher (hell und dunkel, 11 Seiten):**
+  - 0 Kontrastfehler, 0 Texte unter 11 pt.
+  - 200 % Text ohne Überlauf.
+  - Alle Tippflächen ≥ 36 pt, Hauptelemente 44 pt.

@@ -221,19 +221,18 @@
   function todayHtml(nextLesson) {
     const due = dueCount(), weak = weakest(), st = streak(), ov = overall();
     const praxis = window.Praxis ? window.Praxis.openTask() : null;
-    const tiles = [];
-    tiles.push(`<a class="today-tile ${due ? "hot" : ""}" href="#/training">
-      <span class="label">Wiederholen</span><b>${due ? `${due} Karten fällig` : pool().length ? "Alles wiederholt" : "Noch nichts fällig"}</b>
-      <span>${due ? "Ca. " + Math.max(1, Math.round(due * 0.3)) + " Min. – festigt, was du schon gelernt hast." : nextDueText() ? `Nächste Karten ${nextDueText()}.` : "Beantworte Quizfragen, dann geht es los."}</span></a>`);
-    if (nextLesson) tiles.push(`<a class="today-tile k-${nextLesson.k.id}" href="#/lektion/${nextLesson.k.id}/${nextLesson.l.id}">
-      <span class="label">Neu lernen</span><b>${esc(nextLesson.l.titel)}</b><span>${esc(nextLesson.k.titel)}</span></a>`);
-    if (weak) tiles.push(`<a class="today-tile k-${weak.k.id}" href="#/training?k=${weak.k.id}&l=${weak.l.id}">
-      <span class="label">Auffrischen · ${weak.m} % sicher</span><b>${esc(weak.l.titel)}</b><span>Deine schwächste Lektion – gezielt die unsicheren Fragen.</span></a>`);
-    else if (praxis) tiles.push(`<a class="today-tile k-${praxis.k.id}" href="#/lektion/${praxis.k.id}/${praxis.l.id}?praxis=1">
-      <span class="label">Praxis</span><b>${esc(praxis.l.titel)}</b><span>Übung umsetzen und reflektieren – mit Feedback zu deinem Bild.</span></a>`);
+    const row = (window.VeyeUI && window.VeyeUI.row) || ((h, i, c, t, sub) => `<a class="row" href="${h}"><span class="row-t"><b>${t}</b><span>${sub}</span></span></a>`);
+    const rows = [];
+    rows.push(row("#/training", "loop", "ic-indigo",
+      due ? `${due} Karten wiederholen` : pool().length ? "Alles wiederholt" : "Noch nichts zu wiederholen",
+      due ? `Etwa ${Math.max(1, Math.round(due * 0.3))} Minuten` : nextDueText() ? `Nächste Karten ${nextDueText()}` : "Beantworte Quizfragen, dann geht es los",
+      due ? `<b class="due-count">${due}</b>` : "", due ? "hot" : ""));
+    if (weak) rows.push(row(`#/training?k=${weak.k.id}&l=${weak.l.id}`, "spark", `ic-${weak.k.id}`, `Auffrischen: ${esc(weak.l.titel)}`, `${weak.m} % sicher – gezielt die unsicheren Fragen`));
+    else if (praxis) rows.push(row(`#/lektion/${praxis.k.id}/${praxis.l.id}?praxis=1`, "camera", `ic-${praxis.k.id}`, `Praxis: ${esc(praxis.l.titel)}`, "Übung umsetzen und reflektieren"));
+    const serie = st.days ? `${st.days} ${st.days === 1 ? "Tag" : "Tage"} in Folge${st.today ? "" : " · heute noch offen"}` : "";
     return `
-      <div class="sec-head"><h2>Heute</h2><span class="label">${st.days ? `${st.days} ${st.days === 1 ? "Tag" : "Tage"} in Folge${st.today ? "" : " · heute noch offen"}` : "Starte deine Lernserie"}${ov !== null ? ` · ${ov} % sicher` : ""}</span></div>
-      <div class="today">${tiles.join("")}</div>`;
+      <div class="sec-head"><h2>Dein Plan</h2>${serie || ov !== null ? `<span class="label">${serie}${serie && ov !== null ? " · " : ""}${ov !== null ? `${ov} % sicher` : ""}</span>` : ""}</div>
+      <div class="group">${rows.join("")}</div>`;
   }
 
   window.Lernen = { recordQuiz, grade, session, dueCount, mastery, overall, weakest, streak, review, todayHtml, cardsFor };

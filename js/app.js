@@ -121,7 +121,7 @@
   }
 
   /* ---------------- Seiten ---------------- */
-  const pad2 = n => String(n).padStart(2, "0");
+  const pad2 = n => String(n);
   const allLessons = () => KURSE.flatMap(k => k.lektionen.map(l => ({ k, l })));
   const nextLesson = () => allLessons().find(x => !isDone(x.k.id, x.l.id)) || null;
 
@@ -129,71 +129,80 @@
     const p = progress(k);
     return `
       <a class="course k-${k.id}" href="#/kurs/${k.id}">
-        <div class="course-frame">${(window.KURS_FOTOS || {})[k.id] ? `<img class="course-img" src="${(window.KURS_FOTOS || {})[k.id]}" alt="" loading="lazy" decoding="async">` : ""}<span class="course-tc">${pad2(k.lektionen.length)} LEKTIONEN</span><span class="course-no">${pad2(i + 1)}</span></div>
+        <div class="course-frame">${(window.KURS_FOTOS || {})[k.id] ? `<img class="course-img" src="${(window.KURS_FOTOS || {})[k.id]}" alt="" loading="lazy" decoding="async">` : ""}<span class="course-tc">${k.lektionen.length} Lektionen</span><span class="course-no">${pad2(i + 1)}</span></div>
         <div class="course-body">
           <h3>${esc(k.titel)}</h3>
           <p>${esc(k.beschreibung)}</p>
         </div>
         <div class="course-foot" style="display:block">
           <div class="progress"><div style="width:${p.pct}%"></div></div>
-          <div class="progress-label">${pad2(p.n)} / ${pad2(p.total)} abgeschlossen</div>
+          <div class="progress-label">${p.n} von ${p.total} abgeschlossen</div>
         </div>
       </a>`;
   }
 
+  // Symbole im Stil von SF Symbols (Linien, 1.9 pt)
+  const SYM = {
+    reel: '<svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 9.5v5l4-2.5z"/></svg>',
+    loop: '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/></svg>',
+    wheel: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.5"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3"/></svg>',
+    frame: '<svg viewBox="0 0 24 24"><path d="M3 8V4h4M17 4h4v4M21 16v4h-4M7 20H3v-4"/><circle cx="12" cy="12" r="3"/></svg>',
+    play: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10 9.5v5l4.5-2.5z"/></svg>',
+    book: '<svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M9 8h6"/></svg>',
+    note: '<svg viewBox="0 0 24 24"><path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6z"/><path d="M6 3v18M10 8h5M10 12h5"/></svg>',
+    cloud: '<svg viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.2 9.1 4.5 4.5 0 0 0 7 18z"/></svg>',
+    spark: '<svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/></svg>',
+    camera: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>'
+  };
+  /** Zeile einer gruppierten Liste: Symbol · Titel/Untertitel · Wert › */
+  const row = (href, icon, ic, title, sub, end = "", extra = "") =>
+    `<a class="row ${extra}" href="${href}"><span class="row-ic ${ic}" aria-hidden="true">${SYM[icon] || ""}</span>
+      <span class="row-t"><b>${title}</b>${sub ? `<span>${sub}</span>` : ""}</span><span class="row-end">${end}</span></a>`;
+  window.VeyeUI = { SYM, row };
+
   function home() {
     const lessons = allLessons();
-    const total = lessons.length;
     const fertig = lessons.filter(x => isDone(x.k.id, x.l.id)).length;
     const nx = nextLesson();
-    const headAt = nx ? lessons.findIndex(x => x === nx || (x.k === nx.k && x.l === nx.l)) : total - 1;
-    const grafiken = Object.values(window.GRAFIKEN || {}).reduce((a, l) => a + l.length, 0);
-    const fotos = Object.values(window.FOTOS || {}).reduce((a, l) => a + l.reduce((b, f) => b + (f.vergleich ? 2 : 1), 0), 0);
     const vids = allVideos();
+    const datum = new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" });
+    const foto = nx ? ((window.FOTOS || {})[`${nx.k.id}/${nx.l.id}`] || []).find(f => f.src && !f.hoch) : null;
+    const bild = (foto && foto.src) || (nx && (window.KURS_FOTOS || {})[nx.k.id]) || "img/fotos/32.webp";
+    const stufe = l => ({ basis: "Grundlagen", vertiefung: "Vertiefung", praxis: "Praxis" }[l.level] || "Lektion");
     return `
-      <section class="hero-cine bleed">
-        <div class="hero-frame hero-bars">
-          <div class="hero-light"></div>
-          <img class="hero-photo" src="img/fotos/32.webp" alt="" decoding="async">
-          <div class="hero-inner">
-            <div class="hero-meta rise"><span>${KURSE.length} Kurse</span><span>${total} Lektionen</span><span>${grafiken + fotos} Bilder</span></div>
-            <h1 class="rise">Lerne Film wie an der <em>Filmhochschule.</em></h1>
-            <p class="lead rise">Bildsprache, Kamera, Licht und Schnitt. Color Grading von den Scopes bis zum eigenen Look. Und alles angewendet auf Reels in der Edits-App.</p>
-            <div class="hero-cta rise">
-              ${nx ? `<a class="btn primary big" href="#/lektion/${nx.k.id}/${nx.l.id}">▶ ${fertig ? "Weiterlernen" : "Erste Lektion starten"}</a>` : `<a class="btn primary big" href="#/training">Wiederholen im Training</a>`}
-              <a class="btn big" href="#/feed">Reels ansehen</a>
-            </div>
-          </div>
-        </div>
-        <div class="timeline">
-          <div class="tl-row"><span class="label">Dein Fortschritt</span><span class="label acc">${pad2(fertig)} / ${pad2(total)}</span></div>
-          <div class="tl-track" role="img" aria-label="${fertig} von ${total} Lektionen abgeschlossen">
-            ${lessons.map(x => `<i class="k-${x.k.id} ${isDone(x.k.id, x.l.id) ? "done" : ""}" title="${esc(x.l.titel)}"></i>`).join("")}
-            <span class="tl-head" style="left:calc(${((headAt + 0.5) / total) * 100}% - 1px)"></span>
-          </div>
-          <div class="tl-legend">${KURSE.map(k => `<span style="--c:var(--${k.id === "film" ? "accent" : k.id === "color" ? "accent2" : "rose"})">${esc(k.titel)}</span>`).join("")}</div>
-        </div>
-      </section>
+      <header class="today-head"><div class="date">${esc(datum)}</div><h1>Heute</h1></header>
+
+      ${nx ? `<a class="feature k-${nx.k.id}" href="#/lektion/${nx.k.id}/${nx.l.id}">
+        <img src="${bild}" alt="" decoding="async">
+        <p class="eyebrow">${fertig ? "Weiterlernen" : "Erste Lektion"} · ${esc(nx.k.titel)}</p>
+        <h2>${esc(nx.l.titel)}</h2>
+        <p>${stufe(nx.l)} · ${window.Feed.lessonCards(nx.k, nx.l).length} Karten · ${(nx.l.quiz || []).length} Fragen</p>
+        <span class="btn primary">${fertig ? "Fortsetzen" : "Starten"}</span>
+      </a>` : `<a class="feature" href="#/training"><img src="img/fotos/32.webp" alt=""><p class="eyebrow">Alles geschafft</p><h2>Wiederholen, was du gelernt hast</h2><span class="btn primary">Wiederholen</span></a>`}
+
+      <div class="progress-card" role="group" aria-label="Fortschritt je Kurs">
+        ${KURSE.map(k => { const p = progress(k); return `<div class="pc-row k-${k.id}"><b>${esc(k.titel)}</b><span>${p.n} von ${p.total}</span><div class="progress"><div style="width:${p.pct}%"></div></div></div>`; }).join("")}
+      </div>
 
       ${window.Lernen ? window.Lernen.todayHtml(nx) : ""}
       ${installHint()}
 
-      <div class="sec-head"><h2>Kurse</h2><a class="label link" href="#/kurse">Alle ${total} Lektionen →</a></div>
+      <div class="sec-head"><h2>Kurse</h2><a class="label link" href="#/kurse">Alle anzeigen</a></div>
       <div class="course-grid swipe-row">${KURSE.map(courseCard).join("")}</div>
 
-      <div class="sec-head"><h2>Werkzeuge</h2><span class="label">Üben & nachschlagen</span></div>
-      <div class="tools">
-        ${[["#/feed", "Lern-Feed", "Alle Lektionen als Reels – auch zum Zuhören.", "reel"],
-           ["#/training", "Wiederholen", "Karten kommen wieder, bevor du sie vergisst.", "loop"],
-           ["#/labor", "Grading-Labor", "Eigene Bilder graden, Scopes live lesen.", "wheel"],
-           ["#/labor?breakdown=1", "Breakdown", "Filmbilder analysieren, dann auflösen.", "frame"],
-           ["#/videos", "Mediathek", `${vids.length} Videos, Lektionen zugeordnet.`, "play"],
-           ["#/glossar", "Glossar", `${(window.GLOSSAR || []).length} Fachbegriffe von ACES bis Whip Pan.`, "book"]]
-          .map(([href, t, d, ic]) => `<a class="tool" href="${href}"><i class="tool-ic ic-${ic}" aria-hidden="true"></i><b>${t}</b><span>${d}</span></a>`).join("")}
+      <div class="sec-head"><h2>Werkzeuge</h2></div>
+      <div class="group">
+        ${row("#/feed", "reel", "ic-blue", "Lern-Feed", "Alle Lektionen als Reels, auch zum Zuhören")}
+        ${row("#/training", "loop", "ic-indigo", "Wiederholen", "Karten kommen wieder, bevor du sie vergisst")}
+        ${row("#/labor", "wheel", "ic-orange", "Grading-Labor", "Eigene Bilder graden, Scopes live lesen")}
+        ${row("#/labor?breakdown=1", "frame", "ic-teal", "Breakdown", "Filmbilder analysieren und auflösen")}
+        ${row("#/videos", "play", "ic-pink", "Mediathek", "Videos zu den Lektionen", String(vids.length))}
+        ${row("#/glossar", "book", "ic-gray", "Glossar", "Fachbegriffe von ACES bis Whip Pan", String((window.GLOSSAR || []).length))}
+        ${row("#/sync", "cloud", "ic-blue", "Geräte & Backup", "Handy und Computer abgleichen")}
       </div>
 
       <details class="fold">
-        <summary><h2>Lernpfad & Mentoren</h2><span class="label">Empfehlung · 6 Wochen +</span></summary>
+        <summary><h2>Lernpfad & Mentoren</h2><span class="label">6 Wochen</span></summary>
         <ol class="path">
           <li><span class="label">Woche 1–2</span><p>Filmstudium-Basics: Einstellungsgrößen, Kamera, Licht. Jede Übung praktisch umsetzen.</p></li>
           <li><span class="label">Woche 3</span><p>Color Grading Basis: Korrektur, Scopes, Primaries – dazu das Grading-Labor.</p></li>
@@ -302,17 +311,17 @@
     const p = progress(k);
     const no = KURSE.indexOf(k) + 1;
     return `
-      <section class="course-head bleed k-${k.id}">
-        <div class="course-frame"></div>
+      <section class="course-head k-${k.id}">
+        <div class="course-frame">${(window.KURS_FOTOS || {})[k.id] ? `<img class="course-img" src="${window.KURS_FOTOS[k.id]}" alt="" decoding="async">` : ""}</div>
         <div class="course-head-in">
-          <div class="crumbs"><a href="#/">Start</a><span aria-hidden="true">/</span><a href="#/kurse">Kurse</a><span aria-hidden="true">/</span>Kurs ${pad2(no)}</div>
+          <div class="crumbs"><a href="#/">Start</a><span aria-hidden="true">/</span><a href="#/kurse">Kurse</a></div>
           <h1>${esc(k.titel)}</h1>
           <p class="lead">${esc(k.beschreibung)}</p>
           <div class="progress"><div style="width:${p.pct}%"></div></div>
-          <div class="progress-label">${pad2(p.n)} / ${pad2(p.total)} Lektionen abgeschlossen</div>
+          <div class="progress-label">${p.n} von ${p.total} Lektionen abgeschlossen</div>
         </div>
       </section>
-      <div class="sec-head k-${k.id}"><h2>Lektionen</h2><span class="label">${pad2(k.lektionen.length)} Einträge</span></div>
+      <div class="sec-head k-${k.id}"><h2>Lektionen</h2><span class="label">${k.lektionen.length} Lektionen</span></div>
       <ul class="edl k-${k.id}">
         ${k.lektionen.map((l, i) => `
           <li class="${isDone(k.id, l.id) ? "done" : ""}">
@@ -562,9 +571,9 @@
     return `
       <section class="feed-hero">
         <div class="phone-mock" aria-hidden="true">
-          <div class="pm-card pm-1"><span>Licht</span><b>Key · Fill · Back</b></div>
-          <div class="pm-card pm-2"><span>Kurzer Check</span><b>1/50 s bei 25 fps?</b></div>
-          <div class="pm-card pm-3"><span>Color</span><b>Lift · Gamma · Gain</b></div>
+          <div class="pm-card pm-1" style="--img:url(img/fotos/00.webp)"><span>Licht</span><b>Key · Fill · Back</b></div>
+          <div class="pm-card pm-2" style="--img:url(img/fotos/08.webp)"><span>Kurzer Check</span><b>1/50 s bei 25 fps?</b></div>
+          <div class="pm-card pm-3" style="--img:url(img/fotos/36.webp)"><span>Color</span><b>Lift · Gamma · Gain</b></div>
         </div>
         <div class="feed-copy">
           <span class="label acc">Reels-Modus</span>
