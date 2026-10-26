@@ -91,16 +91,56 @@
     return out.filter(s => /[\p{L}\d]/u.test(s));
   }
 
+  /* ---- Eingesprochene Aufnahmen (natürliche Stimme „Bella“, audio/<schlüssel>.mp3) ---- */
+  const clips = () => window.STIMME_CLIPS || null;
+  let audio = null;
+  // Aufnahmen für einen Text: ganze Karte, oder „Richtig!“/„Nicht ganz.“ + Erklärung
+  function clipsFor(text) {
+    const c = clips();
+    if (!c || prefs.natural === false) return null;
+    const t = clean(text);
+    if (c.has(key(t))) return [key(t)];
+    const m = t.match(/^(Richtig!|Nicht ganz\.) (.+)$/);
+    if (m && c.has(key(m[1])) && c.has(key(m[2]))) return [key(m[1]), key(m[2])];
+    return null;
+  }
+  const hasNatural = () => !!clips() && prefs.natural !== false;
+  function playClips(keys, id, opts, fallbackText) {
+    const next = () => {
+      if (id !== runId) return;
+      const k = keys.shift();
+      if (!k) { current = null; audio = null; emit(); if (opts.onend) opts.onend(); return; }
+      const a = new Audio(`audio/${k}.mp3`);
+      a.playbackRate = Math.min(2, Math.max(0.5, prefs.rate / 0.95));
+      a.preservesPitch = true;
+      a.onended = () => setTimeout(next, keys.length ? 250 : 0);
+      // Aufnahme fehlt oder Wiedergabe blockiert: einmalig auf die Gerätestimme ausweichen
+      let failed = false;
+      const fail = () => { if (failed || id !== runId) return; failed = true; audio = null; speakSynth(fallbackText, opts, id); };
+      a.onerror = fail;
+      audio = a; current = a; emit();
+      a.play().catch(fail);
+    };
+    next();
+  }
+
   function stop() {
     runId++; queue = []; current = null;
+    if (audio) { try { audio.pause(); } catch { /* egal */ } audio = null; }
     if (available()) synth.cancel();
     emit();
   }
   /** Liest Text vor. onend wird nur aufgerufen, wenn bis zum Ende gelesen (nicht abgebrochen) wurde. */
   function speak(text, opts = {}) {
-    if (!available()) return false;
+    const rec = clipsFor(text);
+    if (!rec && !available()) return false;
     stop();
     const id = runId;
+    if (rec) { playClips(rec, id, opts, text); return true; }
+    return speakSynth(text, opts, id);
+  }
+  function speakSynth(text, opts, id) {
+    if (!available()) { current = null; emit(); return false; }
     queue = chunks(clean(text));
     const next = () => {
       if (id !== runId) return;
@@ -129,8 +169,10 @@
     const vs = voices();
     const v = voice();
     const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const nat = hasNatural();
     return `
-      <label class="vs-row"><span>Stimme</span>
+      ${clips() ? `<label class="vs-row vs-check"><input type="checkbox" class="vs-natural" ${nat ? "checked" : ""}><span>Natürliche Stimme (Bella) für die Reels</span></label>` : ""}
+      <label class="vs-row"><span>${clips() ? "Gerätestimme" : "Stimme"}</span>
         <select class="vs-voice">${vs.length ? vs.map(x => `<option value="${esc(x.voiceURI)}" ${v && x.voiceURI === v.voiceURI ? "selected" : ""}>${esc(x.name)}${score(x) >= 40 ? " ★" : ""}</option>`).join("") : `<option>Standardstimme</option>`}</select></label>
       <label class="vs-row"><span>Tempo</span>
         <input type="range" class="vs-rate" min="0.7" max="1.5" step="0.05" value="${prefs.rate}"><output>${prefs.rate.toFixed(2).replace(/0$/, "")}×</output></label>
@@ -139,8 +181,9 @@
         <span class="vs-hint">${vs.some(x => score(x) >= 40) ? "★ = besonders natürlich" : "Tipp: Natürlichere Stimmen am iPhone unter Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch laden (z. B. „Anna (Premium)“)."}</span></div>`;
   }
   function bindSettings(root) {
-    const sel = root.querySelector(".vs-voice"), rate = root.querySelector(".vs-rate"), auto = root.querySelector(".vs-auto");
-    if (sel) sel.onchange = () => { set({ voice: sel.value }); speak("So klinge ich."); };
+    const sel = root.querySelector(".vs-voice"), rate = root.querySelector(".vs-rate"), auto = root.querySelector(".vs-auto"), nat = root.querySelector(".vs-natural");
+    if (nat) nat.onchange = () => set({ natural: nat.checked });
+    if (sel) sel.onchange = () => { set({ voice: sel.value }); speakSynth("So klinge ich.", {}, (stop(), runId)); };
     if (rate) rate.oninput = () => { set({ rate: +rate.value }); rate.nextElementSibling.textContent = (+rate.value).toFixed(2).replace(/0$/, "") + "×"; };
     if (rate) rate.onchange = () => speak("So schnell lese ich jetzt vor.");
     if (auto) auto.onchange = () => set({ auto: auto.checked });

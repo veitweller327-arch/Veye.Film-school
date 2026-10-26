@@ -80,7 +80,12 @@ Beim Abschließen einer Lektion legt der KI-Assistent einen Lernzettel ins Notiz
   - Sie läuft über die Sprachausgabe des Geräts, also offline und kostenlos.
   - Die natürlichste deutsche Stimme wird automatisch gewählt (iPhone: „Premium“/„Erweitert“, Edge: „Natural“, Chrome/Android: Google).
   - In den Reels liest „Vorlesen“ jede Karte vor und wischt danach automatisch weiter. Bei offenen Quizfragen wartet sie auf die Antwort.
-  - Über „⋯“ lassen sich Stimme, Tempo und Auto-Weiter einstellen.
+  - **Natürliche Stimme „Bella“** (ElevenLabs v4, über Higgsfield erzeugt): Alle Reel-Karten und Quiz-Erklärungen sind vorab eingesprochen.
+    - Dateien: `audio/<schlüssel>.mp3` (413 Clips, 32 kbit/s mono, ca. 18 MB). Die Liste steht in `data/stimme-clips.js`.
+    - Schlüssel = `Stimme.key(text)` (FNV-1a über den geglätteten Vorlesetext). Ändert sich ein Kartentext, passt der Schlüssel nicht mehr: Diese Karte liest dann automatisch die Gerätestimme, bis sie neu eingesprochen ist.
+    - „Richtig!“ und „Nicht ganz.“ sind einzeln aufgenommen und werden vor die Erklärung gesetzt.
+    - Fehlt eine Datei oder ist man offline, liest die Gerätestimme. Der Service Worker speichert die Aufnahmen nicht zwischen.
+  - Über „⋯“ lassen sich natürliche Stimme an/aus, Gerätestimme, Tempo und Auto-Weiter einstellen.
   - Natürlichere Stimmen am iPhone: Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch, dann z. B. „Anna (Premium)“ laden.
 - **60 Beispielfotos** (`img/fotos/`, Zuordnung in `data/fotos.js`):
   - KI-generiert mit Higgsfield, passend zu den Abschnitten der Lektionen.
