@@ -148,8 +148,15 @@
     if (t) t.onclick = () => speak("Hallo! Ich lese dir die Lektionen vor. Wisch weiter, wann immer du willst.");
   }
 
+  /** Stabiler Schlüssel eines Vorlesetexts (FNV-1a) – verknüpft Text und eingesprochene Aufnahme. */
+  function key(text) {
+    const t = clean(text); let h = 0x811c9dc5;
+    for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+    return (h >>> 0).toString(16).padStart(8, "0");
+  }
+
   window.Stimme = {
-    available, voices, voice, speak, stop, speaking, textFrom, clean,
+    available, voices, voice, speak, stop, speaking, textFrom, clean, key,
     prefs: () => ({ ...prefs }), set, settingsHtml, bindSettings,
     onChange: f => { listeners.add(f); return () => listeners.delete(f); }
   };
